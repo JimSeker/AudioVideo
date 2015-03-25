@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.res.Configuration;
 import android.hardware.Camera;
+//import android.hardware.camera2;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,7 +28,7 @@ import android.widget.Toast;
  * 
  * When the user touches the screen, the picture is taken.  There is not button or anything.
  */
-
+//camera is deprecated in API 21+  use android.hardware.camera2
 public class PicCapture extends Activity implements OnClickListener, SurfaceHolder.Callback, Camera.PictureCallback {
   SurfaceView cameraView;
   SurfaceHolder surfaceHolder;
@@ -60,6 +61,7 @@ public class PicCapture extends Activity implements OnClickListener, SurfaceHold
   //this then receives the picture information when the picture is taken.
   //and then restarts the preview so another picture can be taken.
   public void onPictureTaken(byte[] data, Camera camera) {
+      //the picture will end in the pictures directory with numeric name.jpg
     Uri imageFileUri =
       getContentResolver().insert(Media.EXTERNAL_CONTENT_URI, new ContentValues());
     try {
@@ -85,7 +87,7 @@ public class PicCapture extends Activity implements OnClickListener, SurfaceHold
   
   // here is where the main work to get the preiview displayed is done.
   public void surfaceCreated(SurfaceHolder holder) {
-  
+    //camera is deprecated in API 21+  use android.hardware.camera2
     camera = Camera.open();
     if (camera == null) {
     	int i = Camera.getNumberOfCameras();  //things like the nexus 7 2012 with only a front camera are handled here.
