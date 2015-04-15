@@ -2,7 +2,7 @@
 <resources>
 
     <string name="hello">Hello World, audioPlay!</string>
-    <string name="app_name">Play Audio</string>
+    <string name="app_name">Audio Play</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
