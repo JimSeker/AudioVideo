@@ -145,8 +145,8 @@ public class MainActivity extends ActionBarActivity {
 				Bundle savedInstanceState) {
 			View myView = inflater.inflate(R.layout.fragment_main, container, false);
 			// play button, using local file.
-			btnStart = (Button)myView.findViewById(R.id.btnPlayLocal);
-			btnStart.setOnClickListener( new OnClickListener() {
+			btnStartl = (Button)myView.findViewById(R.id.btnPlayLocal);
+			btnStartl.setOnClickListener( new OnClickListener() {
 				@Override public void onClick(View view) {
 					playAudioResource();
 				}
