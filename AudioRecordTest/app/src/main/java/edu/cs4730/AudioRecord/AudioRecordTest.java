@@ -1,4 +1,5 @@
 package edu.cs4730.AudioRecord;
+
 import android.app.Activity;
 import android.content.Context;
 import android.media.MediaPlayer;
@@ -18,16 +19,15 @@ import java.io.IOException;
  * don't use this.
  */
 
-public class AudioRecordTest extends Activity
-{
+public class AudioRecordTest extends Activity {
     private static final String LOG_TAG = "AudioRecordTest";
     private static String mFileName = null;
 
     private RecordButton mRecordButton = null;
     private MediaRecorder mRecorder = null;
 
-    private PlayButton   mPlayButton = null;
-    private MediaPlayer   mPlayer = null;
+    private PlayButton mPlayButton = null;
+    private MediaPlayer mPlayer = null;
 
     private void onRecord(boolean start) {
         if (start) {
@@ -139,16 +139,16 @@ public class AudioRecordTest extends Activity
         LinearLayout ll = new LinearLayout(this);
         mRecordButton = new RecordButton(this);
         ll.addView(mRecordButton,
-            new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                0));
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        0));
         mPlayButton = new PlayButton(this);
         ll.addView(mPlayButton,
-            new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                0));
+                new LinearLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        0));
         setContentView(ll);
     }
 
