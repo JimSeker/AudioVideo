@@ -1,53 +1,38 @@
 package edu.cs4730.videocapture;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.MediaController;
-import android.widget.VideoView;
 
-public class MainActivity extends Activity {
-	int REQUEST_VIDEO_CAPTURE = 1;
-	VideoView mVideoView;
-	
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-		
-		mVideoView = (VideoView)findViewById(R.id.videoView1);
-		mVideoView.setMediaController(new MediaController(this));
-		
-		//setup the button take a video.
-		Button btn1 = (Button)findViewById(R.id.button1);
-        btn1.setOnClickListener( new View.OnClickListener(){
-			@Override
-			public void onClick(View v) {
-				//create an intent to have the default video record take a video.
-			    Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-			    if (takeVideoIntent.resolveActivity(getPackageManager()) != null) {
-			        startActivityForResult(takeVideoIntent, REQUEST_VIDEO_CAPTURE);
-			    }
+// The main code is in the fragment.  But the fragment calls the default video recorder
+// and the response comes back her and then is sent to be fragment to play the recorded video
 
-			}
-        });
-		
-	}
-	
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-	    if (requestCode == REQUEST_VIDEO_CAPTURE && resultCode == RESULT_OK) {
-	        Uri videoUri = data.getData();
-	        Log.v("return", "Video saved to: " + data.getData());
+public class MainActivity extends AppCompatActivity {
 
-	        mVideoView.setVideoURI(videoUri);
-	        mVideoView.start();
-	        
-	    }
-	}
+    final static int REQUEST_VIDEO_CAPTURE = 1;
+    MainFragment mf;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        mf = new MainFragment();
+
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.container, mf).commit();
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+            Uri videoUri = data.getData();
+            Log.v("return", "Video saved to: " + data.getData());
+            mf.startVideo(videoUri);
+        } else {
+            Log.v("return", "video failed?");
+        }
+    }
 }
