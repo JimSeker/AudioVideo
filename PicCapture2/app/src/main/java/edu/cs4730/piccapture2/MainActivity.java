@@ -6,6 +6,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
@@ -13,6 +15,7 @@ import android.hardware.Camera.PictureCallback;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -25,8 +28,7 @@ import android.widget.FrameLayout;
  * 
  * The user presses a button in order to capture the picture.
  *
- * This example is an error when it is paused.  I'll work on a fix later on, plus it needs to be
- * moved to using fragments and other udpates.
+ * the error in the code has been fixed.  Now change this example to use fragments.
  *
  */
 public class MainActivity extends AppCompatActivity {
@@ -36,6 +38,7 @@ public class MainActivity extends AppCompatActivity {
     static int MEDIA_TYPE_IMAGE = 1;
     static int MEDIA_TYPE_VIDEO = 2;
     String TAG = "MainActivity";
+    FrameLayout preview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Create our Preview view and set it as the content of our activity.
         mPreview = new CameraPreview(this, mCamera);
-        FrameLayout preview = (FrameLayout) findViewById(R.id.camera_preview);
+        preview = (FrameLayout) findViewById(R.id.camera_preview);
         preview.addView(mPreview);
 
         // Add a listener to the Capture button
@@ -66,16 +69,30 @@ public class MainActivity extends AppCompatActivity {
 
 
     @Override
-    protected void onPause() {
+    public void onPause() {
         super.onPause();
 
         releaseCamera();              // release the camera immediately on pause event
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();  // Always call the superclass method first
+
+        // Get the Camera instance as the activity achieves full user focus
+        if (mCamera == null && preview != null) {
+            mCamera = getCameraInstance(); // Local method to handle camera init
+            //mPreview = null;  //close down the old one?  maybe, should end the surface, so we can restart it.
+            mPreview = new CameraPreview(this, mCamera);
+            preview.addView(mPreview);
+        }
+    }
     private void releaseCamera() {
         if (mCamera != null) {
             mCamera.release();        // release the camera for other applications
             mCamera = null;
+            preview.removeView(mPreview);  //remove the surfaceView or it will try and use the camera after it has been released.
+            mPreview = null;
         }
     }
 
@@ -110,12 +127,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onPictureTaken(byte[] data, Camera camera) {
 
+            //another way to create and write out a file, instead of what was done in picCapture
             File pictureFile = getOutputMediaFile(MEDIA_TYPE_IMAGE);
             if (pictureFile == null) {
                 Log.d(TAG, "Error creating media file, check storage permissions: ");
                 return;
             }
-
+            Log.d(TAG, "File created as:" + pictureFile);
+            //write out the file.
             try {
                 FileOutputStream fos = new FileOutputStream(pictureFile);
                 fos.write(data);
@@ -125,6 +144,14 @@ public class MainActivity extends AppCompatActivity {
             } catch (IOException e) {
                 Log.d(TAG, "Error accessing file: " + e.getMessage());
             }
+
+            //new tell the system that the file exists , so it will show up in gallery/photos/whatever
+            ContentValues values = new ContentValues();
+            values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
+            values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+            values.put(MediaStore.MediaColumns.DATA, pictureFile.toString());
+            getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
             camera.startPreview();  //start backup the preview, once we have taken the picture.
         }
     };
