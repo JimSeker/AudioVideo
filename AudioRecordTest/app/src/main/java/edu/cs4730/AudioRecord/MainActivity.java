@@ -2,6 +2,9 @@ package edu.cs4730.AudioRecord;
 
 import java.io.IOException;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -13,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 /*
  * Shows how to setup and record audio.  There is a fragment at the end of the code.
@@ -24,14 +28,17 @@ public class MainActivity extends AppCompatActivity {
     private static String mFileName = null;
     private MediaRecorder mRecorder = null;
     private MediaPlayer mPlayer = null;
+    private MainFragment myFrag;
+    public static final int REQUEST_PERM_ACCESS = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        myFrag = new MainFragment();
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new MainFragment()).commit();
+                    .add(R.id.container, myFrag).commit();
         }
         //setup the filename to record to / play from.  Assumes /sdcard exists I think.
         mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
@@ -71,18 +78,28 @@ public class MainActivity extends AppCompatActivity {
      * Note, you have to set a file name that it will start into, since you can't store just in memory.
      *
      */
+
     private void startRecording() {
-        mRecorder = new MediaRecorder();
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-        mRecorder.setOutputFile(mFileName);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        try {
-            mRecorder.prepare();
-        } catch (IOException e) {
-            Log.e(TAG, "prepare() failed");
+        if ((ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) ||
+            (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED)) {
+            //I'm on not explaining why, just asking for permission.
+            Log.v(TAG, "asking for permissions");
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO},
+                    REQUEST_PERM_ACCESS);
+
+        } else {
+            mRecorder = new MediaRecorder();
+            mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            mRecorder.setOutputFile(mFileName);
+            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            try {
+                mRecorder.prepare();
+            } catch (IOException e) {
+                Log.e(TAG, "prepare() failed");
+            }
+            mRecorder.start();
         }
-        mRecorder.start();
     }
 
     /*
@@ -116,6 +133,45 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    /**
+     * Callback received when a permissions request has been completed.
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        Log.v(TAG, "onRequest result called.");
+        boolean file = false, mic = false;
+
+        switch (requestCode) {
+            case REQUEST_PERM_ACCESS:
+                //received result for GPS access
+                Log.v(TAG, "Received response for permissions request.");
+                for (int i = 0; i < grantResults.length; i++) {
+                    if ((permissions[i].compareTo(Manifest.permission.WRITE_EXTERNAL_STORAGE) == 0) &&
+                            (grantResults[i] == PackageManager.PERMISSION_GRANTED))
+                        file = true;
+                    else if ((permissions[i].compareTo(Manifest.permission.RECORD_AUDIO) == 0) &&
+                            (grantResults[i] == PackageManager.PERMISSION_GRANTED))
+                        mic = true;
+                }
+                if (mic && file) {
+                    // permission was granted
+                    Log.v(TAG, "Both permissions has now been granted. Starting Demo.");
+                    startRecording();
+                } else {
+                    // permission denied,    Disable this feature or close the app.
+                    Log.v(TAG, "both permissions were NOT granted.");
+                    Toast.makeText(this, "File and Mic access NOT granted", Toast.LENGTH_SHORT).show();
+                    //clean up interface.
+                    myFrag.recording = true;
+                    myFrag.btn_record.setText("Start recording");
+                }
+
+                return;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+    }
 
     /**
      * A placeholder fragment containing a simple view.
