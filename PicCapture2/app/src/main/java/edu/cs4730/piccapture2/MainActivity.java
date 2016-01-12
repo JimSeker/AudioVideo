@@ -8,7 +8,7 @@ import android.support.v7.app.AppCompatActivity;
  * http://developer.android.com/guide/topics/media/camera.html
  * but it has been changed a whole lot, plus bug fixes from android... dumb ones too.
  *
- * The user presses a button in order to capture the picture and the surfaceview is a seperate class.
+ * The user presses a button in order to capture the picture and the surfaceview is a separate class.
  *
  * most of the code is in the MainFragment and/or the surfaceView.  The code here is for the onPause
  * and onResume events, so we don't hold the camera while the app is paused.

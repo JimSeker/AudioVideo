@@ -3,6 +3,6 @@
     <string name="hello">Hello World, PicCapture!</string>
     <string name="app_name">Picture Capture</string>
 
-<!-- TODO: Remove or change this placeholder text -->
+    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
