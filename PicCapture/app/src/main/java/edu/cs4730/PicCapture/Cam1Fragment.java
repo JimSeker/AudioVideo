@@ -78,6 +78,7 @@ public class Cam1Fragment extends Fragment implements View.OnClickListener, Surf
         try {
             OutputStream imageFileOS =
                     getActivity().getContentResolver().openOutputStream(imageFileUri);
+
             imageFileOS.write(data);
             imageFileOS.flush();
             imageFileOS.close();
