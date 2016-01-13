@@ -9,12 +9,11 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="edu.cs4730.piccapture2.Cam2Fragment">
 
-    <TextureView
-        android:id="@+id/texture"
+    <FrameLayout
+        android:id="@+id/camera2_preview"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:layout_weight="1"/>
-
+        android:layout_weight="1" />
     <Button
         android:id="@+id/btn_takepicture"
         android:layout_width="wrap_content"
