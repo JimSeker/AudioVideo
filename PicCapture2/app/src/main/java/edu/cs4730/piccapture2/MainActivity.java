@@ -10,37 +10,53 @@ import android.support.v7.app.AppCompatActivity;
  *
  * The user presses a button in order to capture the picture and the surfaceview is a separate class.
  *
- * most of the code is in the MainFragment and/or the surfaceView.  The code here is for the onPause
+ * most of the code is in the Cam1Fragment and/or the surfaceView.  The code here is for the onPause
  * and onResume events, so we don't hold the camera while the app is paused.
  *
  */
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener {
 
-    MainFragment mf;
-
+    public static final int REQUEST_PERM_ACCESS = 1;
     String TAG = "MainActivity";
+    MainFragment myFrag;
+    Cam1Fragment mf;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (mf == null) {
-            mf = new MainFragment();
+        if (savedInstanceState == null) {
+            myFrag = new MainFragment();
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, mf).commit();
+                    .add(R.id.container, myFrag).commit();
         }
     }
 
+    @Override
+    public void onFragmentInteraction(int which) {
+        if (which == 1) {
+            mf = new Cam1Fragment();
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, mf).addToBackStack(null).commit();
+        } else {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.container, new Cam2Fragment()).addToBackStack(null).commit();
+        }
+    }
 
     @Override
     public void onPause() {
         super.onPause();     //call the super first, then our stuff.
-        mf.releaseCamera();   // release the camera immediately on pause event
+        if (mf != null)
+            mf.releaseCamera();   // release the camera immediately on pause event
     }
 
     @Override
     public void onResume() {
         super.onResume();  // Always call the superclass method first
-        mf.reinitCamera(); //reinitialize the camera if coming from an onPause event.
+        if (mf != null)
+            mf.reinitCamera(); //reinitialize the camera if coming from an onPause event.
     }
 
 }
