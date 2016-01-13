@@ -124,14 +124,15 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
         try {
             String cameraId = manager.getCameraIdList()[0];
 
-            // setup the camera perview.
+            // setup the camera perview.  should wrap this in a checkpermissions, which studio is bitching about
+            // except it has been done before this fragment is called.
             manager.openCamera(cameraId, mStateCallback, null);
 
 
             //setup for taking the picture here, so we only do it once, instead at "take picture" time.
             characteristics = manager.getCameraCharacteristics(cameraId);
-            StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
-            jpegSizes = map.getOutputSizes(ImageFormat.JPEG);
+            jpegSizes  = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG);
+
             //setup the width and height size, assuming camera knows it or use default 640x480.
             if (jpegSizes != null && 0 < jpegSizes.length) {
                 width = jpegSizes[0].getWidth();
@@ -366,7 +367,7 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
+       //don't need to do anything, I think it works by the reset of the app.
     }
 
     @Override
