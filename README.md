@@ -18,9 +18,9 @@ in a surfaceview.  A capturePic class (that required the preview class) to take 
 
 <b>VideoCapture1</b> Uses an intent to record a video via the native recorder and then plays it in the app.
 
-<b>VideoCapture2</b> shows how to record video using the media recorder (and older camera APIs) and plays it back.  Doesn't work well on API 21+ video maybe upside down. (no premission checking for API23+ either) 
+<b>VideoCapture2</b> shows how to record video using the media recorder (and older camera APIs) and plays it back.  Doesn't work well on API 21+ video maybe upside down. (no permission checking for API23+ either) 
 
-<b>VideoCapture3</b> shows how to record video several videos in a row.  works ok on API 21, but 23+ video is upsidedown  (no premission checking for API23+ either)
+<b>VideoCapture3</b> shows how to record video several videos in a row.  works ok on API 21, but 23+ video is upsidedown  (no permission checking for API23+ either)
 
 <b>VideoPlayA</b> shows and to play a video with a video view.
 
