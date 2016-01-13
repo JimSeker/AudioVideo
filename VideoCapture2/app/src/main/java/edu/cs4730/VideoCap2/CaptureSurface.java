@@ -12,68 +12,68 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 public class CaptureSurface extends SurfaceView implements SurfaceHolder.Callback {
-  MediaRecorder recorder;
-  SurfaceHolder holder;
-  String outputFile;
-  private static final String Tag = "CaptureSurface";
-  
-  public CaptureSurface(Context context, AttributeSet attrs) {
-    super(context, attrs);
-    holder = getHolder();
-    holder.addCallback(this);
-    holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-    Log.d(Tag, "Setting up recorder.");
-    recorder = new MediaRecorder();
-    recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-    recorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
-    CamcorderProfile cpHigh = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
-	recorder.setMaxDuration(50000); // 50 seconds
-	recorder.setMaxFileSize(5000000); // Approximately 5 megabytes
-    //CamcorderProfile cpHigh = CamcorderProfile.get(CamcorderProfile.QUALITY_LOW);
-    recorder.setProfile(cpHigh);
+    MediaRecorder recorder;
+    SurfaceHolder holder;
+    String outputFile;
+    private static final String Tag = "CaptureSurface";
+
+    public CaptureSurface(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        holder = getHolder();
+        holder.addCallback(this);
+        holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        Log.d(Tag, "Setting up recorder.");
+        recorder = new MediaRecorder();
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        recorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
+        CamcorderProfile cpHigh = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
+        recorder.setMaxDuration(50000); // 50 seconds
+        recorder.setMaxFileSize(5000000); // Approximately 5 megabytes
+        //CamcorderProfile cpHigh = CamcorderProfile.get(CamcorderProfile.QUALITY_LOW);
+        recorder.setProfile(cpHigh);
 //    recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
 //    recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
 //    recorder.setVideoEncoder(MediaRecorder.VideoEncoder.MPEG_4_SP);
-    outputFile = Environment.getExternalStorageDirectory().getPath() +"/videoexample.mp4";
-    recorder.setOutputFile(outputFile);
-    Log.d(Tag, "finished setting up recorder.");
-  }
-
-  public void startRecording() {
-    recorder.start();
-    Log.d(Tag, "Recording started.");
-  }
-  
-  public void stopRecording() {
-    recorder.stop();
-    recorder.release();
-    Log.d(Tag, "Recording finished.");
-  }
-  
-  @Override
-  public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-    
-  }
-
-  @Override
-  public void surfaceCreated(SurfaceHolder holder) {
-
-    recorder.setPreviewDisplay(holder.getSurface());
-    if (recorder != null) {
-      try {
-        recorder.prepare();
-      } catch (IllegalStateException e) {
-        Log.e(Tag, "IllegalStateException "+ e.getMessage());
-      } catch (IOException e) {
-        Log.e(Tag, "IOException" + e.getMessage());
-      }
+        outputFile = Environment.getExternalStorageDirectory().getPath() + "/videoexample.mp4";
+        recorder.setOutputFile(outputFile);
+        Log.d(Tag, "finished setting up recorder.");
     }
-    
-  }
 
-  @Override
-  public void surfaceDestroyed(SurfaceHolder holder) {
-      recorder.release(); //likely not needed... 
-  }
+    public void startRecording() {
+        recorder.start();
+        Log.d(Tag, "Recording started.");
+    }
+
+    public void stopRecording() {
+        recorder.stop();
+        recorder.release();
+        Log.d(Tag, "Recording finished.");
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+
+    }
+
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+
+        recorder.setPreviewDisplay(holder.getSurface());
+        if (recorder != null) {
+            try {
+                recorder.prepare();
+            } catch (IllegalStateException e) {
+                Log.e(Tag, "IllegalStateException " + e.getMessage());
+            } catch (IOException e) {
+                Log.e(Tag, "IOException" + e.getMessage());
+            }
+        }
+
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        recorder.release(); //likely not needed...
+    }
 
 }
