@@ -19,6 +19,7 @@ import java.util.concurrent.Callable;
 
 /**
  * A simple fragment to setup the permissions and then launch the demo code.
+ * for video, currently look at https://github.com/googlesamples/android-Camera2Video
  */
 public class MainFragment extends Fragment {
     String TAG = "MainFragment";
