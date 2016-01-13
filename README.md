@@ -16,9 +16,13 @@ in a surfaceview.  A capturePic class (that required the preview class) to take 
 
 <b>PicCapture3</b> shows examples of how to take a picture with the intent.
 
-<b>VideoCaptureX</b> shows examples of how to record video
+<b>VideoCapture1</b> Uses an intent to record a video via the native recorder and then plays it in the app.
 
-<b>VideoPlayA</b> shows and to play a video.
+<b>VideoCapture2</b> shows examples of how to record video
+
+<b>VideoCapture3</b> shows examples of how to record video
+
+<b>VideoPlayA</b> shows and to play a video with a video view.
 
 <b>YouTubeDemo</b> Shows how to use the youtube API and key.  This demo is still a work in progress.
 
