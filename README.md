@@ -7,7 +7,14 @@ eclipse/ has the examples in eclipse project format, no longer updated.  Otherwi
 
 <b>AudioRecordTest</b>  will record via the mic and then you can play it back.
 
-<b>PicCaptureX</b> shows examples of how to take a picture and store them.
+<b>CameraPreview</b> uses Api21 and only the Camera2 APIs.  The code is broken up into a Preview class that just shows the camera preview
+in a surfaceview.  A capturePic class (that required the preview class) to take a picture.  At at some point a CaptureVid that will capture video (no even started).
+
+<b>PicCapture1</b> shows how to write code to take a picture with either camera and camera2 apis.
+
+<b>PicCapture2</b> hides most of the camera code in a cameraXpreview.  It has code for both camera and camera2 apis.
+
+<b>PicCapture3</b> shows examples of how to take a picture with the intent.
 
 <b>VideoCaptureX</b> shows examples of how to record video
 
