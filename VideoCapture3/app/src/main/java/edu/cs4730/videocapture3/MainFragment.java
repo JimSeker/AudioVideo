@@ -10,15 +10,15 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+
 import java.io.IOException;
 
 /**
- *  this is another simple example that records video.  Again, click the screen to record and
- *  again to stop recording.   It will then setup again, so you can record another one.
- *  the last file on the sdcard will not play, because it is empty, because of the way this setups.
- *
+ * this is another simple example that records video.  Again, click the screen to record and
+ * again to stop recording.   It will then setup again, so you can record another one.
+ * the last file on the sdcard will not play, because it is empty, because of the way this setups.
  */
-public class MainFragment extends Fragment  implements View.OnClickListener, SurfaceHolder.Callback{
+public class MainFragment extends Fragment implements View.OnClickListener, SurfaceHolder.Callback {
 
     MediaRecorder recorder;
     SurfaceHolder holder;
@@ -57,7 +57,7 @@ public class MainFragment extends Fragment  implements View.OnClickListener, Sur
                 .get(CamcorderProfile.QUALITY_HIGH);
         recorder.setProfile(cpHigh);
         num++; //so it doesn't overwrite the previous file.
-        recorder.setOutputFile(Environment.getExternalStorageDirectory().getPath()+"/videocapture_example"+num+".mp4");
+        recorder.setOutputFile(Environment.getExternalStorageDirectory().getPath() + "/videocapture_example" + num + ".mp4");
         recorder.setMaxDuration(50000); // 50 seconds
         recorder.setMaxFileSize(5000000); // Approximately 5 megabytes
     }
@@ -67,7 +67,7 @@ public class MainFragment extends Fragment  implements View.OnClickListener, Sur
 
         try {
             recorder.prepare();
-        }  catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             getActivity().finish();
         }
