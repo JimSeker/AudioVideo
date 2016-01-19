@@ -30,15 +30,15 @@ import java.util.Arrays;
 public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callback{
 
 
-    private SurfaceHolder mHolder;
+    public SurfaceHolder mHolder;
     String TAG = "Camera2Preview";
     Context context;
     //used for the camera
     String cameraId;
     public CameraDevice mCameraDevice;
     private CaptureRequest.Builder mPreviewBuilder;
-    private CameraCaptureSession mPreviewSession;
-
+    public CameraCaptureSession mPreviewSession;
+    Surface surface;
 
     public Camera2Preview(Context context, String CameraID) {
         super(context);
@@ -105,7 +105,7 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
 
 
         //get the surface, so I can added to varying places...
-        Surface surface = mHolder.getSurface();
+       surface = mHolder.getSurface();
 
         try {
             mPreviewBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);

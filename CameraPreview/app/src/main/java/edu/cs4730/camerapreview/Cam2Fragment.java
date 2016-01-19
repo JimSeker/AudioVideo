@@ -7,6 +7,7 @@ import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,6 +35,11 @@ public class Cam2Fragment extends Fragment {
 
     //for taking a picture.
     Camera2CapturePic mCapture;
+
+    //for take a video
+    Camera2CaptureVid mVideo;
+    //Camera2CaptureVid2 mVideo;
+    boolean mIsRecordingVideo = false;
 
 
     public Cam2Fragment() {
@@ -69,7 +75,7 @@ public class Cam2Fragment extends Fragment {
                     @Override
                     public void onClick(View v) {
                         if (mCapture == null) // While I would like the declare this earlier, the camara is not setup yet, so wait until now.
-                          mCapture = new Camera2CapturePic(getActivity().getApplicationContext(),mPreview);
+                            mCapture = new Camera2CapturePic(getActivity().getApplicationContext(), mPreview);
 
                         // get an image from the camera
                         if (mCapture.reader != null) {  //I'm sure it's setup correctly if reader is not null.
@@ -80,6 +86,28 @@ public class Cam2Fragment extends Fragment {
                 }
         );
         btn_takevideo = (Button) myView.findViewById(R.id.btn_takevideo);
+        btn_takevideo.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (mVideo == null) // While I would like the declare this earlier, the camara is not setup yet, so wait until now.
+                            mVideo = new Camera2CaptureVid((AppCompatActivity)getActivity(), mPreview);
+
+
+                        if (mIsRecordingVideo == false) {  //about to take a video
+                            mIsRecordingVideo = true;
+                            btn_takevideo.setText("Stop Recording");
+                            mVideo.startRecordingVideo(getOutputMediaFile(MEDIA_TYPE_VIDEO));
+                        } else {
+                            mVideo.stopRecordingVideo();
+                            mIsRecordingVideo = false;
+                            btn_takevideo.setText("Start Recording");
+                        }
+
+
+                    }
+                }
+        );
         //and add video when I know how to do it.
         return myView;
     }
