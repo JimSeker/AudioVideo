@@ -19,7 +19,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".SimpleYTActivity"
+            android:name=".BasicYTActivity"
             android:label="@string/title_activity_simple_yt"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="landscape" >
