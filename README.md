@@ -22,6 +22,8 @@ in a surfaceview.  A capturePic class (that required the preview class) to take 
 
 <b>VideoCapture3</b> shows how to record video several videos in a row.  works ok on API 21, but 23+ video is upsidedown  (no permission checking for API23+ either)
 
+<b>VideoCapture4</b> shows how to record video using camera2. it works ok on API 21 on allows you to record only one video.  For marshmallow (API 23+) you can record several video in a row (with different names).
+
 <b>VideoPlayA</b> shows and to play a video with a video view.
 
 <b>YouTubeDemo</b> Shows how to use the youtube API and key.  This demo is still a work in progress.
