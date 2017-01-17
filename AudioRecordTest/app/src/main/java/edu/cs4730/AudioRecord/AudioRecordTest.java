@@ -15,8 +15,8 @@ import android.widget.LinearLayout;
 import java.io.IOException;
 
 /*
- * this is really old and bad code in places.   Left only for historial and teaching purposes.
- * don't use this.
+ * this is really old and bad code in places.   Left only for historical and teaching purposes.
+ * DO NOT USE!
  */
 
 public class AudioRecordTest extends Activity {
