@@ -7,8 +7,7 @@ eclipse/ has the examples in eclipse project format, no longer updated.  Otherwi
 
 <b>AudioRecordTest</b> will record via the mic and then you can play it back.
 
-<b>CameraPreview</b> uses Api21 and only the Camera2 APIs.  The code is broken up into a Preview class that just shows the camera preview
-in a surfaceview.  A capturePic class (that required the preview class) to take a picture.  At at some point a CaptureVid that will capture video (not even started).
+<b>CameraPreview</b> only the Camera2 APIs and targets API 21+.  The code is broken up into a Preview class that just shows the camera preview in a surfaceview.  A capturePic class (that required the preview class) to take a picture. And there is a VideoClass as well.  This example is far from perfect, but works to show the seperation in the classes.
 
 <b>PicCapture1</b> shows how to write code to take a picture with either camera and camera2 apis.
 
