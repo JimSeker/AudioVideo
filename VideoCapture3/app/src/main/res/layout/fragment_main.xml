@@ -2,13 +2,47 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context="edu.cs4730.videocapture3.MainFragment">
+    tools:context=".MainFragment"
+    android:orientation="vertical">
 
-    <SurfaceView
-        android:id="@+id/cameraView"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Permissions:" />
+
+    <TextView
+        android:id="@+id/logperm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nothing" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set premissions again"
+        android:id="@+id/btn_perm" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="API 20 or lowers uses camera.  (API 21+ may not work correctly). " />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start Camera Preview Demo"
+        android:id="@+id/btn_cam" />
+
+    <TextView
+            android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="API 21 or Higher can use camera2. " />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Start Camera2 Preview Demo"
+        android:id="@+id/btn_cam2" />
+
 
 </LinearLayout>

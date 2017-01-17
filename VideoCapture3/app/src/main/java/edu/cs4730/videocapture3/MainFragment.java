@@ -1,29 +1,32 @@
 package edu.cs4730.videocapture3;
 
-import android.media.CamcorderProfile;
-import android.media.MediaRecorder;
+import android.Manifest;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.TextView;
+import android.widget.Toast;
 
-import java.io.IOException;
 
 /**
- * this is another simple example that records video.  Again, click the screen to record and
- * again to stop recording.   It will then setup again, so you can record another one.
- * the last file on the sdcard will not play, because it is empty, because of the way this setups.
+ * A simple fragment to setup the permissions and then launch the demo code.
+ * for video, currently look at https://github.com/googlesamples/android-Camera2Video
  */
-public class MainFragment extends Fragment implements View.OnClickListener, SurfaceHolder.Callback {
+public class MainFragment extends Fragment {
+    String TAG = "MainFragment";
+    Button btn1, btn2, btn3;
+    TextView label;
 
-    MediaRecorder recorder;
-    SurfaceHolder holder;
-    boolean recording = false;
-    int num = 0;
+    private OnFragmentInteractionListener mListener;
 
     public MainFragment() {
         // Required empty public constructor
@@ -35,72 +38,97 @@ public class MainFragment extends Fragment implements View.OnClickListener, Surf
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View myView = inflater.inflate(R.layout.fragment_main, container, false);
-        recorder = new MediaRecorder();
-        initRecorder();
-        SurfaceView cameraView = (SurfaceView) myView.findViewById(R.id.cameraView);
-        holder = cameraView.getHolder();
-        holder.addCallback(this);
-        holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        btn1 = (Button) myView.findViewById(R.id.btn_perm);
+        btn1.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CheckPerm();
+            }
+        });
+        btn2 = (Button) myView.findViewById(R.id.btn_cam);
+        btn2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mListener != null)
+                    mListener.onFragmentInteraction(1);
+            }
+        });
+        btn3 = (Button) myView.findViewById(R.id.btn_cam2);
+        btn3.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    if (mListener != null)
+                        mListener.onFragmentInteraction(2);
+                } else {
+                    Toast.makeText(getContext(), "No, you are Below API 21", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
 
-        cameraView.setClickable(true);
-        cameraView.setOnClickListener(this);
-        return myView;
-    }
 
+            label=(TextView)myView.findViewById(R.id.logperm);
 
-    private void initRecorder() {
-        // recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        recorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
-        recorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
+            CheckPerm();
 
-        CamcorderProfile cpHigh = CamcorderProfile
-                .get(CamcorderProfile.QUALITY_HIGH);
-        recorder.setProfile(cpHigh);
-        num++; //so it doesn't overwrite the previous file.
-        recorder.setOutputFile(Environment.getExternalStorageDirectory().getPath() + "/videocapture_example" + num + ".mp4");
-        recorder.setMaxDuration(50000); // 50 seconds
-        recorder.setMaxFileSize(5000000); // Approximately 5 megabytes
-    }
-
-    private void prepareRecorder() {
-        recorder.setPreviewDisplay(holder.getSurface());
-
-        try {
-            recorder.prepare();
-        } catch (IOException e) {
-            e.printStackTrace();
-            getActivity().finish();
+            return myView;
         }
-    }
 
-    public void onClick(View v) {
-        if (recording) {
-            recorder.stop();
-            recording = false;
+    public void CheckPerm() {
+        if ((ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) ||
+                (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)) {
+            //I'm on not explaining why, just asking for permission.
+            Log.v(TAG, "asking for permissions");
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO},
+                    MainActivity.REQUEST_PERM_ACCESS);
 
-            // Let's initRecorder so we can record again
-            initRecorder();
-            prepareRecorder();
         } else {
-            recording = true;
-            recorder.start();
+            label.setText("Camera access: Granted\n External File access: Granted\n");
+        }
+
+    }
+
+    public void setPerm(Boolean cam, Boolean file) {
+        if (cam && file) {
+            label.setText("Camera access: Granted\n External File access: Granted\n");
+        } else if (cam) {
+            label.setText("Camera access: Granted\n External File access: NOT\n");
+        } else if (file) {
+            label.setText("Camera access: NOT\n External File access: Granted\n");
+        } else {
+            label.setText("Camera access: NOT\n External File access: NOT\n");
         }
     }
 
-    public void surfaceCreated(SurfaceHolder holder) {
-        prepareRecorder();
-    }
-
-    public void surfaceChanged(SurfaceHolder holder, int format, int width,
-                               int height) {
-    }
-
-    public void surfaceDestroyed(SurfaceHolder holder) {
-        if (recording) {
-            recorder.stop();
-            recording = false;
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
         }
-        recorder.release();
-        getActivity().finish();
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnFragmentInteractionListener {
+
+        void onFragmentInteraction(int which);
     }
 }
