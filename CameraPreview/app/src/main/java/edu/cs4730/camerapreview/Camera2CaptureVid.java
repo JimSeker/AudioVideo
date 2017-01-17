@@ -1,6 +1,5 @@
 package edu.cs4730.camerapreview;
 
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
