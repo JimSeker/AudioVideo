@@ -10,6 +10,7 @@ import android.view.View;
  *
  * Helpful references:
  * https://developers.google.com/youtube/android/player/
+ *   as a note, this is currently use the 1.2.2 jar files which was the most recent as of jan 17, 2017
  *
  * a nice tutorial of how to implement it.
  * http://www.sitepoint.com/using-the-youtube-api-to-embed-video-in-an-android-app/
