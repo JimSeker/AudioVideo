@@ -38,7 +38,7 @@ public class MainFragment extends Fragment {
         vv.setMediaController(new MediaController(getActivity()));
         //Setup where the file to play is
 
-        //on the SDcard in the root directory.  Not you need permissions to read the external storage.
+        //on the SDcard in the root directory.  Now you need permissions to read the external storage.
         //Uri videoUri = Uri.parse(Environment.getExternalStorageDirectory().getPath() + "/the-empire.3gp");
         //Log.v("path",Environment.getExternalStorageDirectory().getPath() );
 
