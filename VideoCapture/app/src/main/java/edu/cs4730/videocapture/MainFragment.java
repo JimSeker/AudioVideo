@@ -15,7 +15,7 @@ import android.widget.VideoView;
 
 
 /**
- * A simple {@link Fragment} subclass.
+ * simple of example to use an intent to record videa via the default video recorder.
  */
 public class MainFragment extends Fragment {
 
