@@ -27,8 +27,8 @@ public class CaptureSurface extends SurfaceView implements SurfaceHolder.Callbac
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
         CamcorderProfile cpHigh = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH);
-        recorder.setMaxDuration(50000); // 50 seconds
-        recorder.setMaxFileSize(5000000); // Approximately 5 megabytes
+       // recorder.setMaxDuration(50000); // 50 seconds
+       // recorder.setMaxFileSize(5000000); // Approximately 5 megabytes
         //CamcorderProfile cpHigh = CamcorderProfile.get(CamcorderProfile.QUALITY_LOW);
         recorder.setProfile(cpHigh);
 //    recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
