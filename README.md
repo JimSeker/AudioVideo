@@ -5,7 +5,7 @@ eclipse/ has the examples in eclipse project format, no longer updated.  Otherwi
 
 <b>AudioPlay</b> demos how to play a resouce audio file and an audio file from any other location (ie filesystem, internet, etc)
 
-<b>AudioRecordTest</b>  will record via the mic and then you can play it back.
+<b>AudioRecordTest</b> will record via the mic and then you can play it back.
 
 <b>CameraPreview</b> uses Api21 and only the Camera2 APIs.  The code is broken up into a Preview class that just shows the camera preview
 in a surfaceview.  A capturePic class (that required the preview class) to take a picture.  At at some point a CaptureVid that will capture video (not even started).
@@ -20,14 +20,13 @@ in a surfaceview.  A capturePic class (that required the preview class) to take 
 
 <b>VideoCapture2</b> shows how to record video using the media recorder (and older camera APIs) and plays it back.  Doesn't work well on API 21+ video maybe upside down. (no permission checking for API23+ either) 
 
-<b>VideoCapture3</b> shows how to record video several videos in a row.  works ok on API 21, but 23+ video is upsidedown  (no permission checking for API23+ either)
-
-<b>VideoCapture4</b> shows how to record video using camera2. it works ok on API 21 on allows you to record only one video.  For marshmallow (API 23+) you can record several video in a row (with different names).
+<b>VideoCapture3</b> shows how to record video with either Camera or Camera2 (API21+).  Note that using Camera in 21+ causes odd results like the video maybe upside down.
 
 <b>VideoPlayA</b> shows and to play a video with a video view.
 
 <b>YouTubeDemo</b> Shows how to use the youtube API and key.  This demo is still a work in progress.
 
+<b>legacy/</b> are now abandoned examples and are no longer updated.
 
 These are example code for University of Wyoming, Cosc 4730 Mobile Programming course.
 All examples are for Android.
