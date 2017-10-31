@@ -46,7 +46,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-    }
+        //Second method,  An advanced example with more control and feedback.
+        findViewById(R.id.button3).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+            //dies.
+            //   getSupportFragmentManager().beginTransaction().add(android.R.id.content, new MainFragment()).commit();
+
+        }
+    });
+
+}
 
 
 }

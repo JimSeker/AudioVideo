@@ -9,7 +9,7 @@ import com.google.android.youtube.player.YouTubePlayer;
 import com.google.android.youtube.player.YouTubePlayerView;
 
 /*
- * This is the simplist amount of code to launch a youtube video in your app.
+ * This is the simplest amount of code to launch a youtube video in your app.
  *
  * note: This activity is set to landscape in the manifest file.
  */
@@ -29,7 +29,7 @@ public class BasicYTActivity extends YouTubeBaseActivity implements YouTubePlaye
 
     //two necessary methods for the OnInitializedListener
 
-    //once we have scuessfully initialzied the youtube widget, now we can play the video.
+    //once we have successfully initialized the youtube widget, now we can play the video.
     @Override
     public void onInitializationSuccess(YouTubePlayer.Provider provider, YouTubePlayer player, boolean wasRestored) {
         if (!wasRestored) {
