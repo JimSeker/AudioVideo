@@ -3,11 +3,11 @@ Android Audio and video Examples
 
 eclipse/ has the examples in eclipse project format, no longer updated.  Otherwise the examples are for android studio.
 
-<b>AudioPlay</b> demos how to play a resouce audio file and an audio file from any other location (ie filesystem, internet, etc)
+<b>AudioPlay</b> demos how to play a resource audio file and an audio file from any other location (ie filesystem, Internet, etc)
 
 <b>AudioRecordTest</b> will record via the mic and then you can play it back.
 
-<b>CameraPreview</b> only the Camera2 APIs and targets API 21+.  The code is broken up into a Preview class that just shows the camera preview in a surfaceview.  A capturePic class (that required the preview class) to take a picture. And there is a VideoClass as well.  This example is far from perfect, but works to show the seperation in the classes.
+<b>CameraPreview</b> only the Camera2 APIs and targets API 21+.  The code is broken up into a Preview class that just shows the camera preview in a surfaceview.  A capturePic class (that required the preview class) to take a picture. And there is a VideoClass as well.  This example is far from perfect, but works to show the separation in the classes.
 
 <b>PicCapture1</b> shows how to write code to take a picture with either camera and camera2 apis.
 
@@ -23,7 +23,7 @@ eclipse/ has the examples in eclipse project format, no longer updated.  Otherwi
 
 <b>VideoPlayA</b> shows and to play a video with a video view.
 
-<b>YouTubeDemo</b> Shows how to use the youtube API and key.  This demo is still a work in progress.
+<b>YouTubeDemo</b> Shows how to use the youtube API and key.  This demo is still a work in progress.  https://developers.google.com/youtube/android/player/ 
 
 <b>legacy/</b> are now abandoned examples and are no longer updated.
 
