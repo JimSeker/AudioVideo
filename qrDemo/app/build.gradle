@@ -1,0 +1,27 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 28
+
+    defaultConfig {
+        applicationId "edu.cs4730.qrDemo"
+        minSdkVersion 19
+        targetSdkVersion 28
+        versionCode="1"
+        versionName="1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+}
+
+dependencies {
+    implementation  fileTree(dir: 'libs', include: ['*.jar'])
+    implementation  'com.android.support:appcompat-v7:28.0.0'
+    //for LiveData and ViewModel
+    implementation "android.arch.lifecycle:extensions:1.1.0"
+}

@@ -25,6 +25,9 @@ eclipse/ has the examples in eclipse project format, no longer updated.  Otherwi
 
 <b>YouTubeDemo</b> Shows how to use the youtube API and key.  This demo is still a work in progress.  https://developers.google.com/youtube/android/player/ 
 
+<b>QRdemo</b> shows to to create and scan QR codes.  This uses zxing app and some of there code (included in project).
+A link to where I got the code is https://github.com/zxing/zxing/tree/master/android-integration/src/main/java/com/google/zxing/integration/android 
+
 <b>legacy/</b> are now abandoned examples and are no longer updated.
 
 These are example code for University of Wyoming, Cosc 4730 Mobile Programming course.
