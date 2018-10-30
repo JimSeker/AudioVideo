@@ -14,6 +14,9 @@ import android.widget.Toast;
 /**
  * this is a simple demo to play an audio file from either the internet or from the local raw directory.
  * to play from the sdcard, this app would need read permissions for the filesystem.
+ * <p>
+ * Note usesCleartextTraffic="true" is the manifest, because of this downloads audio file.
+ * Google... seriously....
  */
 
 public class MainFragment extends Fragment {
@@ -24,7 +27,6 @@ public class MainFragment extends Fragment {
     MediaPlayer mediaPlayer;
     int playbackPosition = 0;
     boolean localfile = false;
-
 
 
     Button btnStartl, btnStart, btnPause, btnRestart;
@@ -40,7 +42,7 @@ public class MainFragment extends Fragment {
                              Bundle savedInstanceState) {
         View myView = inflater.inflate(R.layout.fragment_main, container, false);
         // play button, using local file.
-        btnStartl = (Button) myView.findViewById(R.id.btnPlayLocal);
+        btnStartl = myView.findViewById(R.id.btnPlayLocal);
         btnStartl.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -48,7 +50,7 @@ public class MainFragment extends Fragment {
             }
         });
         // play button, using remote file.
-        btnStart = (Button) myView.findViewById(R.id.btnPlay);
+        btnStart = myView.findViewById(R.id.btnPlay);
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -56,7 +58,7 @@ public class MainFragment extends Fragment {
             }
         });
         //pause the audio.
-        btnPause = (Button) myView.findViewById(R.id.btnPause);
+        btnPause = myView.findViewById(R.id.btnPause);
         btnPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -64,7 +66,7 @@ public class MainFragment extends Fragment {
             }
         });
         //restart the audio.
-        btnRestart = (Button) myView.findViewById(R.id.btnRestart);
+        btnRestart = myView.findViewById(R.id.btnRestart);
         btnRestart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -76,8 +78,7 @@ public class MainFragment extends Fragment {
     }
 
 
-
-    /*
+    /**
      * simple code to pause the playback and store the current position.
      */
     void pauseAudio() {
@@ -88,10 +89,9 @@ public class MainFragment extends Fragment {
     }
 
 
-	/*
-	 * Load a file from the res/raw directory and play it.
-	 */
-
+    /**
+     * Load a file from the res/raw directory and play it.
+     */
     void playAudioResource() {
         if (mediaPlayer == null || !localfile) {
             mediaPlayer = MediaPlayer.create(getContext(), R.raw.hmscream);
@@ -119,7 +119,7 @@ public class MainFragment extends Fragment {
                 mediaPlayer.prepare();
             } catch (Exception e) {
                 Toast.makeText(getContext(), "Exception, not playing",
-                        Toast.LENGTH_SHORT).show();
+                    Toast.LENGTH_SHORT).show();
                 System.out.println("Player exception is " + e.getMessage());
                 return;
             }
@@ -133,7 +133,7 @@ public class MainFragment extends Fragment {
 
     }
 
-    /*
+    /**
      * should be called after the pauseAudio(), but setup has position set to zero so should work
      * anyway.
      */
@@ -145,7 +145,7 @@ public class MainFragment extends Fragment {
 
     }
 
-    /*
+    /**
      * make sure the player has been released.
      */
     void KillMediaPlayer() {
