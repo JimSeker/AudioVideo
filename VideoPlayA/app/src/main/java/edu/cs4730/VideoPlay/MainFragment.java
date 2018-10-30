@@ -11,9 +11,12 @@ import android.widget.MediaController;
 import android.widget.VideoView;
 
 
-/*
+/**
  * A very simple example to play a video (local and via the web).
  * The local example assumes the video is stored on the sdcard in the root directory.
+ *
+ * Note, since using a website (not https), added allowcleartext flag in manifest file.
+ *
  */
 
 public class MainFragment extends Fragment {
