@@ -14,16 +14,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 
 import java.io.IOException;
 
 /**
  * Shows how to setup and record audio.
- *
+ * <p>
  * The permission request still calls back to MainActivity, so there is some code there to
  * deal with it, which calls methods here.
- *
  */
 public class MainFragment extends Fragment {
 
@@ -49,9 +47,9 @@ public class MainFragment extends Fragment {
         mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
         mFileName += "/audiorecordtest.3gp";
 
-        btn_play = (Button) myView.findViewById(R.id.btn_play);
+        btn_play = myView.findViewById(R.id.btn_play);
         btn_play.setOnClickListener(mlistener);
-        btn_record = (Button) myView.findViewById(R.id.btn_record);
+        btn_record = myView.findViewById(R.id.btn_record);
         btn_record.setOnClickListener(mlistener);
         return myView;
     }
@@ -82,10 +80,10 @@ public class MainFragment extends Fragment {
     };
 
 
-    /*
+    /**
      * A very simple implementation of get the get the player,
      * set the data source, prepare and then start playing.
-     *    call stopPlaying to stop if before end audio.
+     * call stopPlaying to stop if before end audio.
      */
     private void startPlaying() {
         mPlayer = new MediaPlayer();
@@ -98,9 +96,9 @@ public class MainFragment extends Fragment {
         }
     }
 
-    /*
+    /**
      * simple piece of code to stop and release the player.
-     *   if you want to continue it later, don't release, so audio play example.
+     * if you want to continue it later, don't release, so audio play example.
      */
     private void stopPlaying() {
         mPlayer.stop();  //maybe not be needed, since just releasing anyway.
@@ -108,21 +106,19 @@ public class MainFragment extends Fragment {
         mPlayer = null;
     }
 
-    /*
+    /**
      * start to record from the mic, in the mobile format (not mp3), 3gg format.  may need vlc to play on windows if you copy the file
      * over.
-     *
      * Note, you have to set a file name that it will start into, since you can't store just in memory.
-     *
      */
 
     public void startRecording() {
         if ((ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) ||
-                (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED)) {
+            (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED)) {
             //I'm on not explaining why, just asking for permission.
             Log.v(TAG, "asking for permissions");
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO},
-                    MainActivity.REQUEST_PERM_ACCESS);
+                MainActivity.REQUEST_PERM_ACCESS);
 
         } else {
             mRecorder = new MediaRecorder();
@@ -139,9 +135,9 @@ public class MainFragment extends Fragment {
         }
     }
 
-    /*
+    /**
      * stop the recording and clears up.
-     *   Note if you want to stop and then continue again, you would need to stop, but not release (and then only start() again).
+     * Note if you want to stop and then continue again, you would need to stop, but not release (and then only start() again).
      */
     private void stopRecording() {
         mRecorder.stop();
@@ -150,12 +146,13 @@ public class MainFragment extends Fragment {
     }
 
 
-	/*
+    /**
      * clean up and make sure I have released the player and recorder.
-	 *
-	 * (non-Javadoc)
-	 * @see android.support.v4.app.FragmentActivity#onPause()
-	 */
+     *
+     * (non-Javadoc)
+     *
+     * @see android.support.v4.app.FragmentActivity#onPause()
+     */
 
     @Override
     public void onPause() {
@@ -169,5 +166,4 @@ public class MainFragment extends Fragment {
             mPlayer = null;
         }
     }
-
 }

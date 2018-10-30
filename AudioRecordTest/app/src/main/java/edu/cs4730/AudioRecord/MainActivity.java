@@ -3,11 +3,12 @@ package edu.cs4730.AudioRecord;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.Toast;
 
-/*
+/**
  * Almost nothing interesting here.  It deals with the permission request for the file system and audio record access.
  */
 
@@ -23,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             myFrag = new MainFragment();
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, myFrag).commit();
+                .add(R.id.container, myFrag).commit();
         }
     }
 
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
      * Callback received when a permissions request has been completed.
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         Log.v(TAG, "onRequest result called.");
         boolean file = false, mic = false;
 
@@ -42,10 +43,10 @@ public class MainActivity extends AppCompatActivity {
                 Log.v(TAG, "Received response for permissions request.");
                 for (int i = 0; i < grantResults.length; i++) {
                     if ((permissions[i].compareTo(Manifest.permission.WRITE_EXTERNAL_STORAGE) == 0) &&
-                            (grantResults[i] == PackageManager.PERMISSION_GRANTED))
+                        (grantResults[i] == PackageManager.PERMISSION_GRANTED))
                         file = true;
                     else if ((permissions[i].compareTo(Manifest.permission.RECORD_AUDIO) == 0) &&
-                            (grantResults[i] == PackageManager.PERMISSION_GRANTED))
+                        (grantResults[i] == PackageManager.PERMISSION_GRANTED))
                         mic = true;
                 }
                 if (mic && file) {
