@@ -11,6 +11,7 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.TotalCaptureResult;
+import android.media.ExifInterface;
 import android.media.Image;
 import android.media.ImageReader;
 import android.os.Handler;
@@ -29,6 +30,9 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+
+import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
+import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
 
 /**
  * This class is designed to only have the methods needed to capture a picture
@@ -52,6 +56,7 @@ public class Camera2CapturePic {
     CaptureRequest.Builder captureBuilder;
     List<Surface> outputSurfaces;
     File file;
+    int deviceorientation = ORIENTATION_PORTRAIT;
 
 
     public Camera2CapturePic(Context context, Camera2Preview camera2Preview) {
@@ -92,7 +97,7 @@ public class Camera2CapturePic {
 
             // Orientation
             //int rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
-            int deviceorientation = context.getResources().getConfiguration().orientation;
+            deviceorientation = context.getResources().getConfiguration().orientation;
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(characteristics, deviceorientation));
 
 
@@ -103,9 +108,9 @@ public class Camera2CapturePic {
 
     }
 
-    /*
-    ** This is the one to call to take a picture.
-    */
+    /**
+     * This is the one to call to take a picture.
+     */
     public void TakePicture(File filename) {
         file = filename;
         try {
@@ -166,6 +171,13 @@ public class Camera2CapturePic {
             try {
                 output = new FileOutputStream(file);
                 output.write(bytes);
+                //orientation
+                if (deviceorientation == ORIENTATION_LANDSCAPE) {
+                    ExifInterface exifInterface = new ExifInterface(file.getPath());
+                    exifInterface.setAttribute(ExifInterface.TAG_ORIENTATION,
+                        String.valueOf(ExifInterface.ORIENTATION_ROTATE_90));
+                    exifInterface.saveAttributes();
+                }
             } finally {
                 if (null != output) {
                     output.close();

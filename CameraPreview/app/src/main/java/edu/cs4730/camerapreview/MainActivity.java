@@ -3,6 +3,8 @@ package edu.cs4730.camerapreview;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
+//Nothing to see here.  Go to MainFragment.
+
 public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener {
 
     public static final int REQUEST_PERM_ACCESS = 1;

@@ -28,10 +28,13 @@ import java.util.List;
 
 /**
  * This works great with API 23 and not well on 21.  Also, the rotation for landscape shows correctly
- * but when you use a player, it's sideways.
- * 
+ * but when you use a player, it's sideways.  I'm not sure how to set orientation in video/pictures.
+ * <p>
  * or video, currently look at https://github.com/googlesamples/android-Camera2Video
+ *
+ * A note, the video record works once, but the second time i dies on illegalstateexception when it starts.  I don't know why.
  */
+
 public class Camera2CaptureVid {
     //where all the camrea info is located.
     Camera2Preview camera2Preview;
@@ -51,6 +54,7 @@ public class Camera2CaptureVid {
     CameraCaptureSession mSession;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
+
     static {
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
         ORIENTATIONS.append(Surface.ROTATION_90, 0);
@@ -79,7 +83,7 @@ public class Camera2CaptureVid {
         try {
             characteristics = manager.getCameraCharacteristics(camera2Preview.cameraId);
             StreamConfigurationMap map = characteristics
-                    .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+                .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             mVideoSize = chooseVideoSize(map.getOutputSizes(MediaRecorder.class));
 
             try {
