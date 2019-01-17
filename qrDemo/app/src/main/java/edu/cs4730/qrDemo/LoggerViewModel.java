@@ -1,6 +1,6 @@
 package edu.cs4730.qrDemo;
 
-import android.arch.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModel;
 
 /**
  * Created by Seker on 2/13/2018.
