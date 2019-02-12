@@ -3,18 +3,15 @@ package edu.cs4730.camerapreview;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-
-import java.util.concurrent.Callable;
 
 
 /**
@@ -37,14 +34,14 @@ public class MainFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View myView = inflater.inflate(R.layout.fragment_main, container, false);
-        btn1 = (Button) myView.findViewById(R.id.btn_perm);
+        btn1 = myView.findViewById(R.id.btn_perm);
         btn1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                CheckPerm();
             }
         });
-        btn2 = (Button) myView.findViewById(R.id.btn_cam);
+        btn2 = myView.findViewById(R.id.btn_cam);
         btn2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -52,7 +49,7 @@ public class MainFragment extends Fragment {
                     mListener.onFragmentInteraction(1);
             }
         });
-        label = (TextView) myView.findViewById(R.id.logperm);
+        label = myView.findViewById(R.id.logperm);
 
         CheckPerm();
 
