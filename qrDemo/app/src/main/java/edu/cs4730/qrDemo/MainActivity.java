@@ -8,7 +8,8 @@ import androidx.appcompat.app.AppCompatActivity;
 /*
  * Most of the code is in the MainFragment.  The activity has the 
  * onActivityResult() method here, to get the information on the return from scanning a QR code.
- * 	
+ *
+ * 	https://github.com/srowen/zxing-bsplus which is archived, so barcode scanner+ may dissapear at some point too.
  */
 
 public class MainActivity extends AppCompatActivity {
