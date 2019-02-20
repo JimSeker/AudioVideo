@@ -380,7 +380,8 @@ public class IntentIntegrator {
                 String packageName;
                 if (targetApplications.contains(BS_PACKAGE)) {
                     // Prefer to suggest download of BS if it's anywhere in the list
-                    packageName = BS_PACKAGE;
+                    //packageName = BS_PACKAGE;
+                    packageName = BSPLUS_PACKAGE;
                 } else {
                     // Otherwise, first option:
                     packageName = targetApplications.get(0);
