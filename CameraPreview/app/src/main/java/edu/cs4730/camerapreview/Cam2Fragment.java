@@ -2,6 +2,7 @@ package edu.cs4730.camerapreview;
 
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
 import android.os.Environment;
@@ -57,8 +58,13 @@ public class Cam2Fragment extends Fragment {
 
         //we have to pass the camera id that we want to use to the surfaceview
         CameraManager manager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);
+
         try {
             String cameraId = manager.getCameraIdList()[0];
+            CameraCharacteristics cc = manager.getCameraCharacteristics(cameraId);
+            int[] map = cc.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
+            //its 3 on a pixel and I can't find what that actually means....
+            Log.e("CameraDepth value", "Value is " + map[CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_DEPTH_OUTPUT] );
             mPreview = new Camera2Preview(getActivity().getApplicationContext(), cameraId);
             preview.addView(mPreview);
 
