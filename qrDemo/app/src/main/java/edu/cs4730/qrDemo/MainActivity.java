@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
-/*
+/**
  * Most of the code is in the MainFragment.  The activity has the 
  * onActivityResult() method here, to get the information on the return from scanning a QR code.
  *
