@@ -1,14 +1,12 @@
 package edu.cs4730.youtubedemo;
 
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.Toast;
-import android.support.design.widget.Snackbar;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import com.google.android.youtube.player.YouTubeBaseActivity;
 import com.google.android.youtube.player.YouTubeInitializationResult;
