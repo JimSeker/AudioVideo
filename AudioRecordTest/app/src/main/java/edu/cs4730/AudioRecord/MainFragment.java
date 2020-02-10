@@ -7,8 +7,10 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -151,7 +153,7 @@ public class MainFragment extends Fragment {
      *
      * (non-Javadoc)
      *
-     * @see android.support.v4.app.FragmentActivity#onPause()
+     * @see FragmentActivity#onPause()
      */
 
     @Override

@@ -1,7 +1,8 @@
 package edu.cs4730.AudioPlay;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
 
 /**
  * A simple app to demo how to play/pause/restart playing an audio
@@ -28,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
      * Make sure we clean up and release the media player in on pause (and onDestroy too)
      * (non-Javadoc)
      *
-     * @see android.support.v4.app.FragmentActivity#onPause()
+     * @see FragmentActivity#onPause()
      */
     @Override
     protected void onPause() {
