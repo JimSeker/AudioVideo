@@ -19,6 +19,8 @@ eclipse/ has the examples in eclipse project format, no longer updated.  Otherwi
 
 <b>VideoCapture1</b> Uses an intent to record a video via the native recorder and then plays it in the app.
 
+<b>VideoCapture2_1</b> Uses the camera2 to record videos and storages in public movie directory on the sdcard.  It has bottomNavView so you can switch to a player and see the videos you have recorded this session.
+
 <b>VideoCapture3</b> shows how to record video with either Camera or Camera2 (API21+).  Note that using Camera in 21+ causes odd results like the video maybe upside down.
 
 <b>VideoPlayA</b> shows and to play a video with a video view.
