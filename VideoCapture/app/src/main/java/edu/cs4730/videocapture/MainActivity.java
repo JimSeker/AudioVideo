@@ -3,7 +3,9 @@ package edu.cs4730.videocapture;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.util.Log;
 
 // The main code is in the fragment.  But the fragment calls the default video recorder
@@ -20,13 +22,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mf = new MainFragment();
 
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, mf).commit();
+        getSupportFragmentManager().beginTransaction()
+            .add(R.id.container, mf).commit();
 
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == RESULT_OK) {
             Uri videoUri = data.getData();
             Log.v("return", "Video saved to: " + data.getData());

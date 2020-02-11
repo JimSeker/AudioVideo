@@ -1,7 +1,7 @@
 package edu.cs4730.VideoPlay;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 //nothing to see here, see the MainFragment code.
 
