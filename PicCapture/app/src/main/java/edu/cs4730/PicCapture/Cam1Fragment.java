@@ -7,7 +7,9 @@ import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.v4.app.Fragment;
+
+import androidx.fragment.app.Fragment;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
@@ -15,22 +17,25 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
 import java.io.IOException;
 import java.io.OutputStream;
-//import android.hardware.camera2;
 
-/*
+/**
  * This is an example of how to take a picture with android.
  * This example combines anything into a single activity (surfaceview is implemented) and can be
  * some what confusing.  comments are provided to help, but well...
- *
+ * <p>
  * Note the picture should end up in the sdcard/pictures directory.  There is no attempt in this code
  * to display the picture.  use photos or gallery to see the picture.
- *
+ * <p>
  * When the user touches the screen, the picture is taken.  There is not button or anything.
+ * <p>
+ * camera is deprecated in API 21+  use android.hardware.camera2  for any app that is for only API 21+
+ * otherwise, you will still need to use camera or different fragments.  one for 21+ and another for below 21.
+ * The min SDK is now 22 on this project, so everything is depreciated.
  */
-//camera is deprecated in API 21+  use android.hardware.camera2  for any app that is for only API 21+
-//otherwise, you will still need to use camera or different fragments.  one for 21+ and another for below 21.
+
 
 public class Cam1Fragment extends Fragment implements View.OnClickListener, SurfaceHolder.Callback, Camera.PictureCallback {
 
@@ -48,7 +53,7 @@ public class Cam1Fragment extends Fragment implements View.OnClickListener, Surf
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View myView = inflater.inflate(R.layout.fragment_cam1, container, false);
-        cameraView = (SurfaceView) myView.findViewById(R.id.CameraView);
+        cameraView = myView.findViewById(R.id.CameraView);
 
         //setup the preview for the camera.
         surfaceHolder = cameraView.getHolder();
@@ -74,14 +79,15 @@ public class Cam1Fragment extends Fragment implements View.OnClickListener, Surf
     public void onPictureTaken(byte[] data, Camera camera) {
         //the picture will end in the pictures directory with numeric name.jpg
         Uri imageFileUri =
-                getActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new ContentValues());
+            getActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new ContentValues());
         try {
             OutputStream imageFileOS =
-                    getActivity().getContentResolver().openOutputStream(imageFileUri);
+                getActivity().getContentResolver().openOutputStream(imageFileUri);
 
             imageFileOS.write(data);
             imageFileOS.flush();
             imageFileOS.close();
+            Toast.makeText(getContext(), "file located at " + imageFileUri.getPath(), Toast.LENGTH_LONG).show();
         } catch (IOException e) {
             Toast t = Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT);
             t.show();
@@ -93,7 +99,6 @@ public class Cam1Fragment extends Fragment implements View.OnClickListener, Surf
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) {
         camera.startPreview();
     }
-
 
 
     // here is where the activity_main work to get the preiview displayed is done.

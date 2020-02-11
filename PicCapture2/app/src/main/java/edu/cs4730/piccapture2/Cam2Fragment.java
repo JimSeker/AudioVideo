@@ -8,7 +8,7 @@ import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,7 +42,7 @@ public class Cam2Fragment extends Fragment {
         // Inflate the layout for this fragment
         View myView = inflater.inflate(R.layout.fragment_cam2, container, false);
 
-        preview = (FrameLayout) myView.findViewById(R.id.camera2_preview);
+        preview = myView.findViewById(R.id.camera2_preview);
 
         //we have to pass the camera id that we want to use to the surfaceview
         CameraManager manager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);

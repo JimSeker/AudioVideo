@@ -1,9 +1,9 @@
 package edu.cs4730.piccapture2;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
-/*
+/**
  * This example based on android's example on there pages
  * http://developer.android.com/guide/topics/media/camera.html
  * but it has been changed a whole lot, plus bug fixes from android... dumb ones too.
@@ -12,6 +12,9 @@ import android.support.v7.app.AppCompatActivity;
  *
  * most of the code is in the Cam1Fragment and/or the surfaceView.  The code here is for the onPause
  * and onResume events, so we don't hold the camera while the app is paused.
+ *
+ *
+ * Note this does not follow the new scoped permission rules and has a legacy tag in the manifest file.
  *
  */
 public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener {

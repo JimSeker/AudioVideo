@@ -4,8 +4,8 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,7 +35,7 @@ public class MainFragment extends Fragment {
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View myView = inflater.inflate(R.layout.fragment_main, container, false);
-        btn1 = (Button) myView.findViewById(R.id.btn_cam1);
+        btn1 = myView.findViewById(R.id.btn_cam1);
         btn1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -43,7 +43,7 @@ public class MainFragment extends Fragment {
                     mListener.onFragmentInteraction(1);
             }
         });
-        btn2 = (Button) myView.findViewById(R.id.btn_cam2);
+        btn2 = myView.findViewById(R.id.btn_cam2);
         btn2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -51,7 +51,7 @@ public class MainFragment extends Fragment {
                     mListener.onFragmentInteraction(2);
             }
         });
-        label = (TextView) myView.findViewById(R.id.logperm);
+        label =  myView.findViewById(R.id.logperm);
 
         CheckPerm();
 
@@ -61,7 +61,6 @@ public class MainFragment extends Fragment {
     public void CheckPerm() {
         if ((ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) ||
                 (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)) {
-            //I'm on not explaining why, just asking for permission.
             Log.v(TAG, "asking for permissions");
             ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA},
                     MainActivity.REQUEST_PERM_ACCESS);

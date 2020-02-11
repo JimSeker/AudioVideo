@@ -3,7 +3,7 @@ package edu.cs4730.piccapture3;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.widget.Toast;
 
 /**
@@ -11,6 +11,8 @@ import android.widget.Toast;
  * This example is based on  http://www.tutorialspoint.com/android/android_camera.htm
  * The code for the intent in the fragment.  Since it returns via OnActivityResult, the
  * code to caught the picture is in here and then the fragment is called to display the image.
+ *
+ * Note the picture is taken via an intent and not stored.  So no permissions are listed or asked for
  */
 
 public class MainActivity extends AppCompatActivity {
