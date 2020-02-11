@@ -20,8 +20,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
+import androidx.core.app.ActivityCompat;
+import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.util.Size;
 import android.view.LayoutInflater;
@@ -77,33 +77,33 @@ public class Cam2Fragment extends Fragment implements SurfaceHolder.Callback {
         // Inflate the layout for this fragment
         View myView = inflater.inflate(R.layout.fragment_cam2, container, false);
         context = getContext();
-        preview = (SurfaceView) myView.findViewById(R.id.camera2_preview);
+        preview = myView.findViewById(R.id.camera2_preview);
         // Install a SurfaceHolder.Callback so we get notified when the
         // underlying surface is created and destroyed.
         mHolder = preview.getHolder();
         mHolder.addCallback(this);
 
 
-        btn_takevideo = (Button) myView.findViewById(R.id.btn_takevideo);
+        btn_takevideo = myView.findViewById(R.id.btn_takevideo);
         btn_takevideo.setOnClickListener(
-                new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
+            new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
 
-                        if (!mIsRecordingVideo) {  //about to take a video
-                            mIsRecordingVideo = true;
-                            btn_takevideo.setText("Stop Recording");
-                            startRecordingVideo();
-                        } else {
-                            stopRecordingVideo();
-                            mIsRecordingVideo = false;
-                            btn_takevideo.setText("Start Recording");
-                        }
-
-
+                    if (!mIsRecordingVideo) {  //about to take a video
+                        mIsRecordingVideo = true;
+                        btn_takevideo.setText("Stop Recording");
+                        startRecordingVideo();
+                    } else {
+                        stopRecordingVideo();
+                        mIsRecordingVideo = false;
+                        btn_takevideo.setText("Start Recording");
                     }
+
+
                 }
+            }
         );
         return myView;
     }
@@ -123,7 +123,7 @@ public class Cam2Fragment extends Fragment implements SurfaceHolder.Callback {
         mMediaRecorder.reset();
 
         try {
-                mSession.stopRepeating();
+            mSession.stopRepeating();
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -246,7 +246,7 @@ public class Cam2Fragment extends Fragment implements SurfaceHolder.Callback {
         try {
             characteristics = manager.getCameraCharacteristics(cameraId);
             StreamConfigurationMap map = characteristics
-                    .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+                .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             mVideoSize = chooseVideoSize(map.getOutputSizes(MediaRecorder.class));
 
             try {

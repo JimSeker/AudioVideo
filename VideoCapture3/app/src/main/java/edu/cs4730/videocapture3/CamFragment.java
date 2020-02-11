@@ -5,7 +5,7 @@ import android.media.CamcorderProfile;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.SurfaceHolder;
@@ -22,6 +22,10 @@ import java.io.IOException;
  * this is another simple example that records video.  Again, click the button to record and
  * again to stop recording.   It will then setup again, so you can record another one.
  * the last file on the sdcard will not play, because it is empty, because of the way this setups.
+ *
+ * Note, the mid SDk is now above 21, so all of this is "depreciated" at this point.  This should
+ * be done with the camera2 protocols now, which is Cam2Fragment.
+ *
  */
 public class CamFragment extends Fragment implements View.OnClickListener, SurfaceHolder.Callback {
 
@@ -44,13 +48,13 @@ public class CamFragment extends Fragment implements View.OnClickListener, Surfa
         View myView = inflater.inflate(R.layout.fragment_cam, container, false);
         recorder = new MediaRecorder();
         initRecorder();
-        SurfaceView cameraView = (SurfaceView) myView.findViewById(R.id.camera_preview);
+        SurfaceView cameraView = myView.findViewById(R.id.camera_preview);
         holder = cameraView.getHolder();
         holder.addCallback(this);
-        holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        //holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);  //not needed, automatic now.
 
         //setup the button.
-        btn_takevideo = (Button) myView.findViewById(R.id.btn1_takevideo);
+        btn_takevideo = myView.findViewById(R.id.btn1_takevideo);
         btn_takevideo.setOnClickListener(this);
         return myView;
     }

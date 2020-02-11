@@ -1,8 +1,7 @@
 package edu.cs4730.VideoCap2;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import androidx.appcompat.app.AppCompatActivity;
 
 //nothing to see here, check the MainFragment code.
 

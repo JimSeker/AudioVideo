@@ -3,7 +3,7 @@ package edu.cs4730.videocapture3;
 
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 
 import java.io.File;
@@ -12,7 +12,7 @@ import java.util.Date;
 
 //not much to see here, check the CamFragment.
 
-public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener  {
+public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener {
 
     public static final int REQUEST_PERM_ACCESS = 1;
     String TAG = "MainActivity";
@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
         if (savedInstanceState == null) {
             myFrag = new MainFragment();
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, myFrag).commit();
+                .add(R.id.container, myFrag).commit();
         }
     }
 
@@ -37,10 +37,10 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
         if (which == 1) {
 
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, new CamFragment()).addToBackStack(null).commit();
-        } else if (which ==2) {
+                .replace(R.id.container, new CamFragment()).addToBackStack(null).commit();
+        } else if (which == 2) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.container, new Cam2Fragment()).addToBackStack(null).commit();
+                .replace(R.id.container, new Cam2Fragment()).addToBackStack(null).commit();
         }
     }
 
@@ -54,8 +54,12 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
 
         //creates a directory in pictures.
         //File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "MyCameraApp");
+        File mediaStorageDir;
+        if (type == MEDIA_TYPE_IMAGE)
+            mediaStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        else
+            mediaStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
 
-        File mediaStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
 
@@ -72,10 +76,10 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
         File mediaFile;
         if (type == MEDIA_TYPE_IMAGE) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "IMG_" + timeStamp + ".jpg");
+                "IMG_" + timeStamp + ".jpg");
         } else if (type == MEDIA_TYPE_VIDEO) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                    "VID_" + timeStamp + ".mp4");
+                "VID_" + timeStamp + ".mp4");
         } else {
             return null;
         }
