@@ -89,8 +89,6 @@ public class Cam2Fragment extends Fragment implements SurfaceHolder.Callback {
             new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
-
                     if (!mIsRecordingVideo) {  //about to take a video
                         mIsRecordingVideo = true;
                         btn_takevideo.setText("Stop Recording");
@@ -100,8 +98,6 @@ public class Cam2Fragment extends Fragment implements SurfaceHolder.Callback {
                         mIsRecordingVideo = false;
                         btn_takevideo.setText("Start Recording");
                     }
-
-
                 }
             }
         );
