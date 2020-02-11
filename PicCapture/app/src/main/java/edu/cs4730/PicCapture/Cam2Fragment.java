@@ -1,12 +1,12 @@
 package edu.cs4730.PicCapture;
 
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.ImageFormat;
-import android.graphics.SurfaceTexture;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -15,20 +15,17 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.TotalCaptureResult;
-import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.Image;
 import android.media.ImageReader;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.util.Size;
-import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.SurfaceHolder;
@@ -37,9 +34,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -47,10 +42,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import edu.cs4730.PicCapture.R;
-
 /**
- * A simple {@link Fragment} subclass.
+ * This is an example of how to use the camera2 methods.
+ *
+ * Note the picture is stored in the default pictures directory which obeys the new scoped file system,
+ * so firesystem access is probably not needed  for API 29 (but still needed for the below it).
+ *
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class Cam2Fragment extends Fragment implements View.OnClickListener, SurfaceHolder.Callback {
@@ -86,7 +83,7 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View myView = inflater.inflate(R.layout.fragment_cam2, container, false);
-        cameraView = (SurfaceView) myView.findViewById(R.id.CameraView2);
+        cameraView = myView.findViewById(R.id.CameraView2);
 
         //setup the preview for the camera.
         surfaceHolder = cameraView.getHolder();
@@ -104,11 +101,9 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
     @Override
     public void onClick(View v) {
         //take the picture here!
-       // file = new File(Environment.getExternalStorageDirectory() + "/DCIM", "pic.jpg");
+      //this get a unique file name with .jpg in the media pictures directory.
         imageFileUri = getActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new ContentValues());
         try {
-
-
             mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroudHandler);
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -116,6 +111,8 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
 
     }
     //setup the camera objects
+    //It's in the mainfrag, but really should be every time I try and take a picture in case the user changed premissions.
+    @SuppressLint("MissingPermission")
 
     private void openCamera() {
 
