@@ -2,6 +2,7 @@ package edu.cs4730.piccapture3;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.media.ExifInterface;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
@@ -54,9 +55,12 @@ public class MainFragment extends Fragment {
     }
 
     public void setPic(Bitmap bp) {
+
         //Note the picture is not stored on the filesystem, so this is the only "copy" of the picture.
         iv.setImageBitmap(bp);
         iv.invalidate();  //likely not needed, but just in case this will cause the imageview to redraw.
     }
 
 }
+
+
