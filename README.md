@@ -9,7 +9,8 @@ eclipse/ has the examples in eclipse project format, no longer updated.  Otherwi
 
 <b>CameraPreview</b> only the Camera2 APIs and targets API 21+.  The code is broken up into a Preview class that just shows the camera preview in a surfaceview.  A capturePic class (that required the preview class) to take a picture. And there is a VideoClass as well.  This example is far from perfect, but works to show the separation in the classes.
 
-<b>CameraXdemo</b> is a java version of the new cameraX from the androidX libraries. 
+<b>CameraXdemo</b> is a java version of the new cameraX from the androidX libraries.  Note, still alpha in some places.
+<b>CameraXdemo_kt</b> is a kotlin version of the new CameraX androidX libraries.  Note, still alpha in some places.
 
 <b>PicCapture1</b> shows how to write code to take a picture with either camera and camera2 apis.
 

@@ -4,28 +4,40 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.camera.core.AspectRatio;
+import androidx.camera.core.CameraSelector;
 import androidx.camera.core.CameraX;
 import androidx.camera.core.ImageCapture;
-import androidx.camera.core.ImageCaptureConfig;
+import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
-import androidx.camera.core.PreviewConfig;
+
+import androidx.camera.core.UseCase;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
 
 
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Matrix;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.TextureView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.common.util.concurrent.ListenableFuture;
+
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,10 +52,14 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity {
 
     String TAG = "MainActivity";
+    private static final String FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS";
+    private ImageCapture imageCapture;
+    private File outputDirectory;
+
     private int REQUEST_CODE_PERMISSIONS = 101;
     private final String[] REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE"};
-    TextureView textureView;
-
+    PreviewView viewFinder;
+    Button take_photo;
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
 
@@ -51,123 +67,115 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        textureView = findViewById(R.id.view_finder);
 
-        if(allPermissionsGranted()){
+        viewFinder = findViewById(R.id.viewFinder);
+        take_photo = findViewById(R.id.camera_capture_button);
+        take_photo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                takePhoto();
+            }
+        });
+
+        if (allPermissionsGranted()) {
             startCamera(); //start camera if permission has been granted by user
-        } else{
+        } else {
             ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
         }
     }
 
     private void startCamera() {
 
-        CameraX.unbindAll();  //remove for 7+
-
-        //AspectRatio aspectRatio = AspectRatio.RATIO_4_3; //AspectRatio(textureView.getWidth(), textureView.getHeight());
-        //PreviewConfig pConfig = new PreviewConfig.Builder().setTargetAspectRatio(aspectRatio).build();
-
-        Size screen = new Size(textureView.getWidth(), textureView.getHeight()); //size of the screen
-        PreviewConfig pConfig = new PreviewConfig.Builder().setTargetResolution(screen).build();
-        Preview preview = new Preview(pConfig);
+        ListenableFuture cameraProviderFuture = ProcessCameraProvider.getInstance(this);
 
 
-        preview.setOnPreviewOutputUpdateListener(
-            new Preview.OnPreviewOutputUpdateListener() {
-                //to update the surface texture we  have to destroy it first then re-add it
+        cameraProviderFuture.addListener(
+            new Runnable() {
                 @Override
-                public void onUpdated(Preview.PreviewOutput output){
-                    ViewGroup parent = (ViewGroup) textureView.getParent();
-                    parent.removeView(textureView);
-                    parent.addView(textureView, 0);
+                public void run() {
+                    try {
+                        ProcessCameraProvider cameraProvider = (ProcessCameraProvider) cameraProviderFuture.get();
+                        Preview preview = (new Preview.Builder()).build();
+                        preview.setSurfaceProvider( viewFinder.getSurfaceProvider());
 
-                    textureView.setSurfaceTexture(output.getSurfaceTexture());
-                    updateTransform();
+                        imageCapture = (new ImageCapture.Builder()).build();
+                        CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+
+                        // Unbind use cases before rebinding
+                        cameraProvider.unbindAll();
+
+                        // Bind use cases to camera
+                        cameraProvider.bindToLifecycle(
+                            MainActivity.this, cameraSelector, preview, imageCapture);
+
+
+                    } catch (Exception e) {
+                        Log.e(TAG, "Use case binding failed", e);
+                    }
                 }
-            });
+            }, ContextCompat.getMainExecutor(this)
+        );
+    }
 
 
-        ImageCaptureConfig imageCaptureConfig = new ImageCaptureConfig.Builder().setCaptureMode(ImageCapture.CaptureMode.MIN_LATENCY)
-            .setTargetRotation(getWindowManager().getDefaultDisplay().getRotation()).build();
-        final ImageCapture imgCap = new ImageCapture(imageCaptureConfig);
 
-        findViewById(R.id.imgCapture).setOnClickListener(new View.OnClickListener() {
+    public final void takePhoto() {
+        if (imageCapture == null) return;
+
+        File photoFile = new File(getOutputDirectory(),
+            (new SimpleDateFormat(FILENAME_FORMAT, Locale.US)).format(System.currentTimeMillis()) + ".jpg");
+        ImageCapture.OutputFileOptions outputOptions = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
+
+
+        imageCapture.takePicture(outputOptions, executor, new ImageCapture.OnImageSavedCallback() {
             @Override
-            public void onClick(View v) {
-                File file = new File(Environment.getExternalStorageDirectory() + "/" + System.currentTimeMillis() + ".png");
-                imgCap.takePicture(file, executor, new ImageCapture.OnImageSavedListener() {
-                    @Override
-                    public void onImageSaved(@NonNull File file) {
-                        String msg = "Pic captured at " + file.getAbsolutePath();
-                        runOnUiThread(() -> Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show());
-                    }
+            public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
+                Uri savedUri = Uri.fromFile(photoFile);
+                String msg = "Photo capture succeeded: " + savedUri;
+                runOnUiThread(() -> Toast.makeText(getBaseContext(), msg,Toast.LENGTH_LONG).show());
+                 Log.d(TAG, msg);
+            }
 
-                    @Override
-                    public void onError(@NonNull ImageCapture.ImageCaptureError imageCaptureError, @NonNull String message, @Nullable Throwable cause) {
-                        String msg = "Pic capture failed : " + message;
-                        runOnUiThread(() -> Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show());
-                        if(cause != null){
-                            cause.printStackTrace();
-                        }
-                    }
-
-                });
+            @Override
+            public void onError(@NonNull ImageCaptureException exception) {
+                Log.e(TAG, "Photo capture failed: "+ exception.getMessage());
             }
         });
 
-        //bind to lifecycle:
-        CameraX.bindToLifecycle((LifecycleOwner)this, preview, imgCap);
+
     }
 
-    private void updateTransform(){
-        Matrix mx = new Matrix();
-        float w = textureView.getMeasuredWidth();
-        float h = textureView.getMeasuredHeight();
-
-        float cX = w / 2f;
-        float cY = h / 2f;
-
-        int rotationDgr;
-        int rotation = (int)textureView.getRotation();
-
-        switch(rotation){
-            case Surface.ROTATION_0:
-                rotationDgr = 0;
-                break;
-            case Surface.ROTATION_90:
-                rotationDgr = 90;
-                break;
-            case Surface.ROTATION_180:
-                rotationDgr = 180;
-                break;
-            case Surface.ROTATION_270:
-                rotationDgr = 270;
-                break;
-            default:
-                return;
+    File getOutputDirectory() {
+        File [] list = getExternalMediaDirs();
+        File mediadir = null;
+        if(list[0] != null) {
+            mediadir = new File (list[0], getResources().getString(R.string.app_name));
+            mediadir.mkdirs();
         }
-
-        mx.postRotate((float)rotationDgr, cX, cY);
-        textureView.setTransform(mx);
+        if (mediadir != null && mediadir.exists())
+            return mediadir;
+        else
+            return getFilesDir();
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
-        if(requestCode == REQUEST_CODE_PERMISSIONS){
-            if(allPermissionsGranted()){
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
                 startCamera();
-            } else{
+            } else {
                 Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
                 finish();
             }
         }
     }
 
-    private boolean allPermissionsGranted(){
+    private boolean allPermissionsGranted() {
 
-        for(String permission : REQUIRED_PERMISSIONS){
-            if(ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED){
+        for (String permission : REQUIRED_PERMISSIONS) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
                 return false;
             }
         }
