@@ -8,15 +8,19 @@ import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
 import androidx.core.app.ActivityCompat;
+import androidx.core.os.EnvironmentCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
+import android.provider.MediaStore;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -45,10 +49,12 @@ public class MainFragment extends Fragment {
                              Bundle savedInstanceState) {
         View myView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        //setup the filename to record to / play from.  Assumes /sdcard exists I think.
-        mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-        mFileName += "/audiorecordtest.3gp";
-
+        //moved everything to the external download directory for simplification.  really need to figure out to start in music/video directory.
+        //note this only works, because it a media file, I think.  can't use generic files.  Can't change to the .MUSIC either.
+        mFileName = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();
+       // mFileName = getActivity().getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS).getAbsolutePath();  //local app download directory.
+        mFileName += File.separator + "audiorecordtest.3gp";
+        Log.wtf(TAG, mFileName);
         btn_play = myView.findViewById(R.id.btn_play);
         btn_play.setOnClickListener(mlistener);
         btn_record = myView.findViewById(R.id.btn_record);
@@ -153,7 +159,7 @@ public class MainFragment extends Fragment {
      *
      * (non-Javadoc)
      *
-     * @see FragmentActivity#onPause()
+
      */
 
     @Override
