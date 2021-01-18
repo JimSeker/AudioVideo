@@ -2,8 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context=".MainFragment">
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/textView1"
@@ -22,10 +21,5 @@
         android:layout_height="wrap_content"
         android:text="Youtube controls" />
 
-    <Button
-        android:id="@+id/button3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Fragment?" />
 
 </LinearLayout>
