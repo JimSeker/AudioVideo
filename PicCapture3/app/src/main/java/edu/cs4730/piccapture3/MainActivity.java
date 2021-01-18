@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         //the picture is stored in the intent in the data key.
         //get the picture and show it in an the imagview.
-        /*
+
         Bundle extras = data.getExtras();
         if (extras != null) {
             //if you know for a fact there will be a bundle, you can use  data.getExtras().get("Data");  but we don't know.
@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
             mf.setPic(bp);
         } else {
             Toast.makeText(this, "No picture was returned", Toast.LENGTH_SHORT).show();
-        } */
+        } 
 
     }
 }
