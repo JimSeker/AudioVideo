@@ -26,10 +26,13 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-// CameraX core library using camera2 implementation
+    // CameraX core library using camera2 implementation
     implementation "androidx.camera:camera-camera2:1.0.0-rc01"
-// CameraX Lifecycle Library
+    // CameraX Lifecycle Library
     implementation "androidx.camera:camera-lifecycle:1.0.0-rc01"
-// CameraX View class
+    // CameraX View class
     implementation "androidx.camera:camera-view:1.0.0-alpha20"
+    // If you want to additionally use the CameraX Extensions library, not used in this example.
+    implementation "androidx.camera:camera-extensions:1.0.0-alpha20"
+
 }
