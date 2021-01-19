@@ -12,6 +12,8 @@ eclipse/ has the examples in eclipse project format, no longer updated.  Otherwi
 <b>CameraXdemo</b> is a java version of the new cameraX from the androidX libraries.  Note, still alpha in some places.
 <b>CameraXdemo_kt</b> is a kotlin version of the new CameraX androidX libraries.  Note, still alpha in some places.
 
+<b>CameraXVideoDemo</b> is using java with the new CameraX for video recording. NOTE, this is using currently private APIs.  The video version of the cameraX APIs are not public yet.  So they may change without notice or simply stop working.  But it is working in RC01.
+
 <b>PicCapture1</b> shows how to write code to take a picture with either camera and camera2 apis.
 
 <b>PicCapture2</b> hides most of the camera code in a cameraXpreview.  It has code for both camera and camera2 apis.
