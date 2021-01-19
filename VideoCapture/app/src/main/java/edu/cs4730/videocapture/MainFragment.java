@@ -18,6 +18,8 @@ import android.widget.VideoView;
 
 /**
  * simple of example to use an intent to record video via the default video recorder.
+ * <p>
+ * API 30 breaks this example.  likely the intent needs fixed.
  */
 public class MainFragment extends Fragment {
 
@@ -43,9 +45,10 @@ public class MainFragment extends Fragment {
             public void onClick(View v) {
                 //create an intent to have the default video record take a video.
                 Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-                if (takeVideoIntent.resolveActivity(getActivity().getPackageManager()) != null) {
-                    startActivityForResult(takeVideoIntent, MainActivity.REQUEST_VIDEO_CAPTURE);
-                }
+                //starting in API 30, it will only target native apps and you can't look for it either.  this is an explicit intent now.
+                //   if (takeVideoIntent.resolveActivity(getActivity().getPackageManager()) != null) {
+                startActivityForResult(takeVideoIntent, MainActivity.REQUEST_VIDEO_CAPTURE);
+                //   }
             }
         });
 
