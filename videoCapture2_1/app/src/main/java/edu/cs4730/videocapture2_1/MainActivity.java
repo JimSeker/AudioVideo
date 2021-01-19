@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         if (type == MEDIA_TYPE_IMAGE)
             mediaStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
         else
-            mediaStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+            mediaStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);  // Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
 
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.

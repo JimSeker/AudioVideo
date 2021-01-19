@@ -30,6 +30,7 @@ public class PlayFragment extends Fragment {
     Spinner mySpinner;
     VideoView vv;
     Context myContext;
+    List<String> mfiles;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -45,17 +46,21 @@ public class PlayFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
 
+                Uri videoUri = Uri.parse( mfiles.get(position));
+                vv.setVideoURI(videoUri);
+                vv.start();
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-
+                vv.stopPlayback();
             }
         });
 
         myViewModel.getfiles().observe(getActivity(), new Observer<List<String>>() {
             @Override
             public void onChanged(List<String> files) {
+                mfiles = files;
                 adapter = new ArrayAdapter<String>(myContext, android.R.layout.simple_spinner_item, files);
                 //set the dropdown layout
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
