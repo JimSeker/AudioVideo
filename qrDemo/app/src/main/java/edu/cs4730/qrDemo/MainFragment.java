@@ -1,6 +1,6 @@
 package edu.cs4730.qrDemo;
 
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import android.content.Intent;
 import android.os.Bundle;
 import androidx.fragment.app.Fragment;
@@ -47,7 +47,7 @@ public class MainFragment extends Fragment {
 
 		//deals the screen rotating and keeps the data for the logger.
         //use activity, so it survives the rotation, instead of fragment here.
-		mViewModel = ViewModelProviders.of(getActivity()).get(LoggerViewModel.class);
+		mViewModel = new ViewModelProvider(getActivity()).get(LoggerViewModel.class);
 
 		// logger, to display text/info.
 		logger = myView.findViewById(R.id.logger);

@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
 
         //code to handle the intentintegrator, then
+
         IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent);
         if (scanResult != null) {
             // handle scan result
@@ -56,5 +57,6 @@ public class MainActivity extends AppCompatActivity {
                 myMainFragment.logthis("[I] scan cancel");
             }
         }
+        super.onActivityResult(requestCode, resultCode, intent);
     }
 }
