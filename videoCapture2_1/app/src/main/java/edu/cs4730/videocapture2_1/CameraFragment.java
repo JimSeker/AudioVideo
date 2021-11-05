@@ -64,7 +64,7 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        myViewModel = new ViewModelProvider(getActivity()).get(videoViewModel.class);
+        myViewModel = new ViewModelProvider(requireActivity()).get(videoViewModel.class);
         View myView = inflater.inflate(R.layout.fragment_camera, container, false);
         context = getContext();
         preview = myView.findViewById(R.id.camera2_preview);
@@ -161,7 +161,7 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
         CameraManager manager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
 
         Log.d(TAG, "openCamera Start");
-        if (ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             try {
                 cameraId = manager.getCameraIdList()[0];
 

@@ -4,8 +4,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
-import androidx.camera.core.ImageCapture;
-import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
 import androidx.camera.core.VideoCapture;
 import androidx.camera.lifecycle.ProcessCameraProvider;
@@ -110,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
     public final void takePhoto() {
 
         if (videoCapture == null) return;
-        if (executor == null ) return;
+        if (executor == null) return;
 
         if (recording) {  //ie already started.
             videoCapture.stopRecording();
@@ -161,7 +159,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
             if (allPermissionsGranted()) {
                 startCamera();
@@ -170,6 +167,7 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private boolean allPermissionsGranted() {

@@ -17,10 +17,12 @@ public class videoViewModel extends ViewModel {
         Files = new MutableLiveData<>(mylist);
 
     }
+
     public void add(String item) {
         mylist.add(item);
-        Files.setValue( mylist);
+        Files.setValue(mylist);
     }
+
     public LiveData<List<String>> getfiles() {
         return Files;
     }
