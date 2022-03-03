@@ -51,7 +51,7 @@ Android Audio and video Examples
 
 **Other A/V Examples:**
 
-`YouTubeDemo` Shows how to use the youtube API and key.  This demo is still a work in progress.  https://developers.google.com/youtube/android/player/ 
+`YouTubeDemo` Shows how to use the youtube API and key.  The youtube libraries are badly out of date and this example doesn't work well since API 29.  https://developers.google.com/youtube/android/player/ 
 
 `QRdemo` shows to to create and scan QR codes.  This uses zxing app and some of there code (included in project).
 A link to where I got the code is https://github.com/zxing/zxing/tree/master/android-integration/src/main/java/com/google/zxing/integration/android 
