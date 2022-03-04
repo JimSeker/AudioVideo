@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-    @SuppressLint("RestrictedApi")
+    @SuppressLint({"RestrictedApi", "MissingPermission"})
     public final void takePhoto() {
 
         if (videoCapture == null) return;

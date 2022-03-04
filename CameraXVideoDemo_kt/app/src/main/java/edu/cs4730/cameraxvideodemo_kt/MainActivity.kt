@@ -1,23 +1,25 @@
 package edu.cs4730.cameraxvideodemo_kt
 
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.Preview
+import androidx.camera.core.VideoCapture
+import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import java.util.concurrent.Executors
-import androidx.camera.core.*
-import androidx.camera.lifecycle.ProcessCameraProvider
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 /**
  * based on https://codelabs.developers.google.com/codelabs/camerax-getting-started#0
@@ -51,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
-    @SuppressLint("RestrictedApi")
+    @SuppressLint("RestrictedApi", "MissingPermission")
     private fun takePhoto() {
         Log.d(TAG, "start")
         // Get a stable reference of the modifiable image capture use case
@@ -94,6 +96,7 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    @SuppressLint("RestrictedApi")
     private fun startCamera() {
 
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
@@ -108,11 +111,15 @@ class MainActivity : AppCompatActivity() {
                     .also {
                         it.setSurfaceProvider(viewFinder.surfaceProvider)
                     }
-            videoCapture = VideoCapture.Builder()
-                    .build()
-
             // Select back camera as a default
             val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+            val vc = VideoCapture.Builder()
+                .setCameraSelector(cameraSelector)
+                .setTargetRotation(viewFinder.display.rotation)
+
+            videoCapture = vc.build()
+
 
             try {
                 // Unbind use cases before rebinding
@@ -170,6 +177,7 @@ class MainActivity : AppCompatActivity() {
                 finish()
             }
         }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
 }
