@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat;
 
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     private File outputDirectory;
 
     private final int REQUEST_CODE_PERMISSIONS = 101;
-    private final String[] REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE"};
+    private  String[] REQUIRED_PERMISSIONS;
     PreviewView viewFinder;
     Button take_photo;
     ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -51,6 +52,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
+            REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA"};
+        } else {
+            REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE"};
+        }
 
         viewFinder = findViewById(R.id.viewFinder);
         take_photo = findViewById(R.id.camera_capture_button);
