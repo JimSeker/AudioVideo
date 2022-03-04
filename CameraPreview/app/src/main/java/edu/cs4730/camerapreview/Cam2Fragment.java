@@ -6,9 +6,11 @@ import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
 import android.os.Environment;
+
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -57,15 +59,15 @@ public class Cam2Fragment extends Fragment {
         preview = myView.findViewById(R.id.camera2_preview);
 
         //we have to pass the camera id that we want to use to the surfaceview
-        CameraManager manager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);
+        CameraManager manager = (CameraManager) requireActivity().getSystemService(Context.CAMERA_SERVICE);
 
         try {
             String cameraId = manager.getCameraIdList()[0];
             CameraCharacteristics cc = manager.getCameraCharacteristics(cameraId);
             int[] map = cc.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
             //its 3 on a pixel and I can't find what that actually means....
-            Log.e("CameraDepth value", "Value is " + map[CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_DEPTH_OUTPUT] );
-            mPreview = new Camera2Preview(getActivity().getApplicationContext(), cameraId);
+            Log.e("CameraDepth value", "Value is " + map[CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_DEPTH_OUTPUT]);
+            mPreview = new Camera2Preview(requireContext(), cameraId);
             preview.addView(mPreview);
 
         } catch (CameraAccessException e) {
@@ -81,7 +83,7 @@ public class Cam2Fragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     if (mCapture == null) // While I would like the declare this earlier, the camera is not setup yet, so wait until now.
-                        mCapture = new Camera2CapturePic(getActivity().getApplicationContext(), mPreview);
+                        mCapture = new Camera2CapturePic(requireContext(), mPreview);
 
                     // get an image from the camera
                     if (mCapture.reader != null) {  //I'm sure it's setup correctly if reader is not null.
@@ -97,7 +99,7 @@ public class Cam2Fragment extends Fragment {
                 @Override
                 public void onClick(View v) {
                     if (mVideo == null) // While I would like the declare this earlier, the camara is not setup yet, so wait until now.
-                        mVideo = new Camera2CaptureVid((AppCompatActivity) getActivity(), mPreview);
+                        mVideo = new Camera2CaptureVid((AppCompatActivity) requireActivity(), mPreview);
 
 
                     if (!mIsRecordingVideo) {  //about to take a video
@@ -122,13 +124,16 @@ public class Cam2Fragment extends Fragment {
      * Create a File for saving an image or video
      */
     private static File getOutputMediaFile(int type) {
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
 
         //creates a directory in pictures.
         //File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "MyCameraApp");
 
-        File mediaStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        File mediaStorageDir;
+        if (type == MEDIA_TYPE_IMAGE) {
+            mediaStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
+        } else {
+            mediaStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
+        }
         // This location works best if you want the created images to be shared
         // between applications and persist after your app has been uninstalled.
 
