@@ -1,17 +1,13 @@
 package edu.cs4730.piccapture3;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Bundle;
-
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.FileProvider;
-
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -19,10 +15,19 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
+import androidx.exifinterface.media.ExifInterface;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 
 /**
@@ -38,10 +43,9 @@ import java.util.Date;
 public class MainActivity extends AppCompatActivity {
     ImageView iv;
 
-    final static int CAPTURE_FILE = 2;
-    final static int CAPTURE_NO_FILE = 1;
     boolean withFile = true;
-   String imagefile;
+    String imagefile;
+    ActivityResultLauncher<Intent> ActivityResultNoPic, ActivityResultPic;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,13 +58,57 @@ public class MainActivity extends AppCompatActivity {
                 open();
             }
         });
+
+        ActivityResultNoPic = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    // There are no request codes
+                    Intent data = result.getData();
+                    Log.w("NOFILE", "onactivityresult no file");
+                    Bundle extras = data.getExtras();
+                    if (extras != null) {
+                        //if you know for a fact there will be a bundle, you can use  data.getExtras().get("Data");  but we don't know.
+                        Bitmap bp = (Bitmap) extras.get("data");
+
+                        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                            //rotate the image
+                            Matrix matrix = new Matrix();
+                            matrix.preRotate(90);
+                            bp = Bitmap.createBitmap(bp, 0, 0, bp.getWidth(), bp.getHeight(), matrix, true);
+                        }
+
+                        //Note the picture is not stored on the filesystem, so this is the only "copy" of the picture.
+                        iv.setImageBitmap(bp);
+                        iv.invalidate();  //likely not needed, but just in case this will cause the imageview to redraw.
+                    } else {
+                        Toast.makeText(getApplicationContext(), "No picture was returned", Toast.LENGTH_SHORT).show();
+                    }
+
+                } else {
+                    Toast.makeText(getApplicationContext(), "Request was canceled.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        ActivityResultPic = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
+            @Override
+            public void onActivityResult(ActivityResult result) {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Log.wtf("CAPTURE FILE", "we got a file?");
+                    iv.setImageBitmap(loadAndRotateImage(imagefile));
+                } else {
+                    Toast.makeText(getApplicationContext(), "Request was canceled.", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+
     }
 
 
     /**
      * android.provider.MediaStore.ACTION_IMAGE_CAPTURE_SECURE
-     * This is an interesting intent, but what does it really do?
-     * does the screen have to be locked into to take a picture?
      * http://developer.android.com/reference/android/provider/MediaStore.html#ACTION_IMAGE_CAPTURE_SECURE
      * android.provider.MediaStore.ACTION_IMAGE_CAPTURE_SECURE
      * It returns the image captured from the camera , when the device is secured
@@ -70,54 +118,21 @@ public class MainActivity extends AppCompatActivity {
         if (!withFile) {
             //create an intent to have the default camera app take a picture and return the picture, but no file.
             Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(intent, CAPTURE_NO_FILE);
+            ActivityResultNoPic.launch(intent);
         } else {
-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
             File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-            File mediaFile = new File(storageDir.getPath() +File.separator + "IMG_" + timeStamp+ ".jpg");
+            File mediaFile = new File(storageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
             Uri photoURI = FileProvider.getUriForFile(this,
-                    "edu.cs4730.piccapture3.fileprovider",
-                    mediaFile);
+                "edu.cs4730.piccapture3.fileprovider",
+                mediaFile);
 
             imagefile = mediaFile.getAbsolutePath();
             Log.wtf("File", imagefile);
-           // Uri photoURI = getUriForFile(this, "edu.cs4730.piccapture3.fileprovider",mediaFile);
+            // Uri photoURI = getUriForFile(this, "edu.cs4730.piccapture3.fileprovider",mediaFile);
             Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
             intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-            startActivityForResult(intent, CAPTURE_FILE);
-        }
-    }
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        //the picture is stored in the intent in the data key.
-        //get the picture and show it in an the imagview.
-
-        if (requestCode == CAPTURE_NO_FILE) {
-            Log.w("NOFILE", "onactivityresult no file");
-            Bundle extras = data.getExtras();
-            if (extras != null) {
-                //if you know for a fact there will be a bundle, you can use  data.getExtras().get("Data");  but we don't know.
-                Bitmap bp = (Bitmap) extras.get("data");
-
-                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                    //rotate the image
-                    Matrix matrix = new Matrix();
-                    matrix.preRotate(90);
-                    bp = Bitmap.createBitmap(bp, 0, 0, bp.getWidth(), bp.getHeight(), matrix, true);
-                }
-
-                //Note the picture is not stored on the filesystem, so this is the only "copy" of the picture.
-                iv.setImageBitmap(bp);
-                iv.invalidate();  //likely not needed, but just in case this will cause the imageview to redraw.
-            } else {
-                Toast.makeText(this, "No picture was returned", Toast.LENGTH_SHORT).show();
-            }
-        } else if (requestCode == CAPTURE_FILE) {
-            Log.wtf("CAPTURE FILE", "we got a file?");
-            iv.setImageBitmap( loadAndRotateImage(imagefile));
+            ActivityResultPic.launch(intent);
         }
     }
 
@@ -138,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
         int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                ExifInterface.ORIENTATION_NORMAL);
+            ExifInterface.ORIENTATION_NORMAL);
         switch (orientation) {
             case ExifInterface.ORIENTATION_ROTATE_270:
                 rotate = 270;
@@ -153,7 +168,7 @@ public class MainActivity extends AppCompatActivity {
         Matrix matrix = new Matrix();
         matrix.postRotate(rotate);
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(),
-                bitmap.getHeight(), matrix, true);
+            bitmap.getHeight(), matrix, true);
     }
 
 }
