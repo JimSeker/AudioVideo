@@ -45,10 +45,10 @@ public class Cam2Fragment extends Fragment {
         preview = myView.findViewById(R.id.camera2_preview);
 
         //we have to pass the camera id that we want to use to the surfaceview
-        CameraManager manager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);
+        CameraManager manager = (CameraManager) requireActivity().getSystemService(Context.CAMERA_SERVICE);
         try {
             String cameraId = manager.getCameraIdList()[0];
-            mPreview = new Camera2Preview(getActivity().getApplicationContext(), cameraId);
+            mPreview = new Camera2Preview(requireActivity().getApplicationContext(), cameraId);
             preview.addView(mPreview);
         } catch (CameraAccessException e) {
             Log.v (TAG, "Failed to get a camera ID!");

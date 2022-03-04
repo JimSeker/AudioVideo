@@ -21,9 +21,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
-
-/*
+/**
  * So this example is similar to picCapture1 but it is split up better.
  * The surfaceview is separated, so it's easier to see what pieces belong to what.
  * Also this code will pause and release the camera, so others can use it.
@@ -59,7 +59,7 @@ public class Cam1Fragment extends Fragment {
         mCamera = getCameraInstance();
 
         // Create our Preview view and set it as the content of our activity.
-        mPreview = new CameraPreview(getActivity().getApplicationContext(), mCamera);
+        mPreview = new CameraPreview(requireContext(), mCamera);
         preview = (FrameLayout) myView.findViewById(R.id.camera_preview);
         preview.addView(mPreview);
 
@@ -90,7 +90,7 @@ public class Cam1Fragment extends Fragment {
         if (mCamera == null && preview != null) {
             mCamera = getCameraInstance(); // Local method to handle camera init
             //mPreview = null;  //close down the old one?  maybe, should end the surface, so we can restart it.
-            mPreview = new CameraPreview(getActivity().getApplicationContext(), mCamera);
+            mPreview = new CameraPreview(requireContext(), mCamera);
             preview.addView(mPreview);
         }
     }
@@ -110,14 +110,8 @@ public class Cam1Fragment extends Fragment {
     /**
      * Check if this device has a camera
      */
-    private boolean checkCameraHardware(Context context) {
-        if (context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA)) {
-            // this device has a camera
-            return true;
-        } else {
-            // no camera on this device
-            return false;
-        }
+    private boolean checkCameraHardware() {
+        return requireContext().getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_ANY);
     }
 
     private Camera.PictureCallback mPicture = new Camera.PictureCallback() {
@@ -148,7 +142,7 @@ public class Cam1Fragment extends Fragment {
             values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
             values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
             values.put(MediaStore.MediaColumns.DATA, pictureFile.toString());
-            getActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            requireActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
 
             camera.startPreview();  //start backup the preview, once we have taken the picture.
         }
@@ -184,7 +178,7 @@ public class Cam1Fragment extends Fragment {
         }
 
         // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         File mediaFile;
         if (type == MEDIA_TYPE_IMAGE) {
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +

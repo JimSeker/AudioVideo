@@ -23,7 +23,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
+
 import androidx.fragment.app.Fragment;
+
 import android.util.Log;
 import android.util.Size;
 import android.view.LayoutInflater;
@@ -44,10 +46,9 @@ import java.util.List;
 
 /**
  * This is an example of how to use the camera2 methods.
- *
+ * <p>
  * Note the picture is stored in the default pictures directory which obeys the new scoped file system,
  * so firesystem access is probably not needed  for API 29 (but still needed for the below it).
- *
  */
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class Cam2Fragment extends Fragment implements View.OnClickListener, SurfaceHolder.Callback {
@@ -71,7 +72,6 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
     List<Surface> outputSurfaces;
     //File file;
     Uri imageFileUri;
-
 
 
     public Cam2Fragment() {
@@ -101,8 +101,8 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
     @Override
     public void onClick(View v) {
         //take the picture here!
-      //this get a unique file name with .jpg in the media pictures directory.
-        imageFileUri = getActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new ContentValues());
+        //this get a unique file name with .jpg in the media pictures directory.
+        imageFileUri = requireActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new ContentValues());
         try {
             mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroudHandler);
         } catch (CameraAccessException e) {
@@ -110,13 +110,14 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
         }
 
     }
+
     //setup the camera objects
     //It's in the mainfrag, but really should be every time I try and take a picture in case the user changed premissions.
     @SuppressLint("MissingPermission")
 
     private void openCamera() {
 
-        CameraManager manager = (CameraManager) getActivity().getSystemService(Context.CAMERA_SERVICE);
+        CameraManager manager = (CameraManager) requireActivity().getSystemService(Context.CAMERA_SERVICE);
         Log.e(TAG, "openCamera E");
         try {
             String cameraId = manager.getCameraIdList()[0];
@@ -128,7 +129,7 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
 
             //setup for taking the picture here, so we only do it once, instead at "take picture" time.
             characteristics = manager.getCameraCharacteristics(cameraId);
-            jpegSizes  = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG);
+            jpegSizes = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG);
 
             //setup the width and height size, assuming camera knows it or use default 640x480.
             if (jpegSizes != null && 0 < jpegSizes.length) {
@@ -138,7 +139,6 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
             reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
             outputSurfaces = new ArrayList<Surface>(2);
             outputSurfaces.add(reader.getSurface());
-
 
 
             HandlerThread thread = new HandlerThread("CameraPicture");
@@ -178,7 +178,7 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
             // Orientation
             //int rotation = getActivity().getWindowManager().getDefaultDisplay().getRotation();
             int deviceorientation = getResources().getConfiguration().orientation;
-            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION,getJpegOrientation(characteristics, deviceorientation) );
+            captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(characteristics, deviceorientation));
 
         }
 
@@ -197,7 +197,8 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
     };
 
     private int getJpegOrientation(CameraCharacteristics c, int deviceOrientation) {
-        if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN) return 0;
+        if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN)
+            return 0;
         int sensorOrientation = c.get(CameraCharacteristics.SENSOR_ORIENTATION);
 
         // Round device orientation to a multiple of 90
@@ -289,8 +290,6 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
                 byte[] bytes = new byte[buffer.capacity()];
                 buffer.get(bytes);
                 save(bytes);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -303,7 +302,7 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
         private void save(byte[] bytes) throws IOException {
             OutputStream output = null;
             try {
-                output = getActivity().getContentResolver().openOutputStream(imageFileUri);
+                output = requireActivity().getContentResolver().openOutputStream(imageFileUri);
                 output.write(bytes);
             } finally {
                 if (null != output) {
@@ -321,8 +320,8 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
                                        CaptureRequest request, TotalCaptureResult result) {
 
             super.onCaptureCompleted(session, request, result);
-            String[] filePathColumn = { MediaStore.Images.Media.DATA };
-            Cursor cursor = getActivity().getContentResolver().query(imageFileUri, filePathColumn, null, null, null);
+            String[] filePathColumn = {MediaStore.Images.Media.DATA};
+            Cursor cursor = requireActivity().getContentResolver().query(imageFileUri, filePathColumn, null, null, null);
             cursor.moveToFirst();
             int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
             String file = cursor.getString(columnIndex);
@@ -364,7 +363,7 @@ public class Cam2Fragment extends Fragment implements View.OnClickListener, Surf
 
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-       //don't need to do anything, I think it works by the reset of the app.
+        //don't need to do anything, I think it works by the reset of the app.
     }
 
     @Override

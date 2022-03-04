@@ -3,6 +3,8 @@ package edu.cs4730.PicCapture;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
@@ -40,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
      * Callback received when a permissions request has been completed.
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         Log.v(TAG, "onRequest result called.");
         boolean file = false, cam = false;
 

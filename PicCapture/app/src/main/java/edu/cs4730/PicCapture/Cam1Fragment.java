@@ -79,10 +79,10 @@ public class Cam1Fragment extends Fragment implements View.OnClickListener, Surf
     public void onPictureTaken(byte[] data, Camera camera) {
         //the picture will end in the pictures directory with numeric name.jpg
         Uri imageFileUri =
-            getActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new ContentValues());
+            requireActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new ContentValues());
         try {
             OutputStream imageFileOS =
-                getActivity().getContentResolver().openOutputStream(imageFileUri);
+                requireActivity().getContentResolver().openOutputStream(imageFileUri);
 
             imageFileOS.write(data);
             imageFileOS.flush();

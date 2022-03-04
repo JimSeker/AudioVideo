@@ -1,6 +1,11 @@
 package edu.cs4730.piccapture2;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
@@ -60,6 +65,33 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnFr
         super.onResume();  // Always call the superclass method first
         if (mf != null)
             mf.reinitCamera(); //reinitialize the camera if coming from an onPause event.
+    }
+
+    /**
+     * Callback received when a permissions request has been completed.
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        Log.v(TAG, "onRequest result called.");
+        boolean file = false, cam = false;
+
+        switch (requestCode) {
+            case REQUEST_PERM_ACCESS:
+                //received result for GPS access
+                Log.v(TAG, "Received response for permissions request.");
+                for (int i = 0; i < grantResults.length; i++) {
+                    if ((permissions[i].compareTo(Manifest.permission.WRITE_EXTERNAL_STORAGE) == 0) &&
+                        (grantResults[i] == PackageManager.PERMISSION_GRANTED))
+                        file = true;
+                    else if ((permissions[i].compareTo(Manifest.permission.CAMERA) == 0) &&
+                        (grantResults[i] == PackageManager.PERMISSION_GRANTED))
+                        cam = true;
+                }
+                myFrag.setPerm(cam, file);
+                return;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 
 }
