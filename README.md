@@ -19,7 +19,7 @@ Android Audio and video Examples
 
 **Picture Examples:**
 
-`PicCapture1` shows how to write code to take a picture with either camera and camera2 apis.
+`PicCapture1` shows how to write code to take a picture (with a surfaceview) with camera2 apis, saving to local or the sdcard.
 
 `PicCapture2` hides most of the camera code in a cameraXpreview.  It has code for both camera and camera2 apis.
 
