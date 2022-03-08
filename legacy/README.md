@@ -11,6 +11,8 @@ These examples are no longer updated and should be concerned abandoned.
 
 <b>VideoCapture4</b> unknown
  
+`PicCapture` shows how to write code to take a picture with either camera and camera2 apis.  as it set to API 26, most of the camera1 has stoppped working correctly.
+ 
 `PicCapture3` shows examples of how to take a picture with the intent.  older code and kind of a mess too.
 
 
