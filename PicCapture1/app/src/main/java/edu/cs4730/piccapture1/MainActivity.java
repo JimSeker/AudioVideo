@@ -50,7 +50,7 @@ import java.util.Locale;
 
 /**
  *  using the camera2 (api 21+) methods to capture a picture and store in either the sdcard or local to the app.
- *  This example just takes the picture.  currently, it doesn't open to display it.   Hopefully that is next.
+ *  This example just takes the picture. then calls a dialog to display the picture. 
  *  the logcat and toast show the files has been stored.
  *
  *  honesty, the new androidX cameraX methods are simpler.  and should be used, unless you are doing something more specific.
