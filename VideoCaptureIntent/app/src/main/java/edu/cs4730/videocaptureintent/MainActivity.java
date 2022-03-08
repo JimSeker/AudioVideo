@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        //Setup to start the video in our local dictories, /video I hope.
+        //Setup to start the video in our local directories, /video I hope.
         findViewById(R.id.buttonsd).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
