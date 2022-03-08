@@ -97,6 +97,11 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     Log.wtf("CAPTURE FILE", "we got a file?");
                     iv.setImageBitmap(loadAndRotateImage(imagefile));
+                    Intent data = result.getData();
+                    if (data != null) {
+                        Uri PicUri = data.getData();
+                        Log.v("return", "Pic saved to: " + data.getData());
+                    }
                 } else {
                     Toast.makeText(getApplicationContext(), "Request was canceled.", Toast.LENGTH_SHORT).show();
                 }

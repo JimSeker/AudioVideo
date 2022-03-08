@@ -23,8 +23,6 @@ Android Audio and video Examples
 
 `PicCapture2` hides most of the camera code in a cameraXpreview.  It has code for both camera and camera2 apis.
 
-`PicCapture3` shows examples of how to take a picture with the intent.
-
 `PicCaptureIntent` uses intents to open the camera app, and return just bytes, put a picture in the local directory (with providers), or store onto the sdcard using the mediastore.  So no permissions are necessary for API 28+
 
 `CameraPreview` only the Camera2 APIs and targets API 21+.  The code is broken up into a Preview class that just shows the camera preview in a surfaceview.  A capturePic class (that required the preview class) to take a picture. And there is a VideoClass as well.  This example is far from perfect, but works to show the separation in the classes.

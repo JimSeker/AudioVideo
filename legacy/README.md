@@ -11,6 +11,7 @@ These examples are no longer updated and should be concerned abandoned.
 
 <b>VideoCapture4</b> unknown
  
+`PicCapture3` shows examples of how to take a picture with the intent.  older code and kind of a mess too.
 
 
 These were example code for University of Wyoming, Cosc 4730 Mobile Programming course.
