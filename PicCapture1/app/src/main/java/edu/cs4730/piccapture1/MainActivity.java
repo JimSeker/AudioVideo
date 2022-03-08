@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.DialogFragment;
 
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
@@ -128,7 +129,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 //or use this to set the name manually.
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
                 ContentValues values = new ContentValues();
-                values.put(MediaStore.Images.Media.TITLE, "IMG_" + timeStamp + ".jpg");  //not needed?
+                //values.put(MediaStore.Images.Media.TITLE, "IMG_" + timeStamp + ".jpg");  //not needed?
                 values.put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_" + timeStamp + ".jpg");  //file name.
                 values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
                 imageFileUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
@@ -364,6 +365,13 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             }
             Toast.makeText(getApplicationContext(), "Saved:" + file, Toast.LENGTH_SHORT).show();
             Log.v(TAG, "Saved:" + file);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    DisplayPicFragment newDialog = DisplayPicFragment.newInstance(imageFileUri);
+                    newDialog.show(getSupportFragmentManager(), "displayPic");
+                }
+            });
             startPreview();
         }
 
