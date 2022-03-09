@@ -17,6 +17,7 @@ These examples are no longer updated and should be concerned abandoned.
 
 `PicCapture3` shows examples of how to take a picture with the intent.  older code and kind of a mess too.
 
+`VideoCapture3` shows how to record video with either Camera or Camera2 (API21+).  Note that using Camera in 21+ causes odd results like the video maybe upside down.
 
 These were example code for University of Wyoming, Cosc 4730 Mobile Programming course.
 All examples are for Android.
