@@ -119,6 +119,14 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     }
 
+    @Override
+    public void onPause()  {
+        if (mIsRecordingVideo) {
+            stopRecordingVideo();
+            mIsRecordingVideo = false;
+        }
+        super.onPause();
+    }
     /**
      * These two are helper methods, to start recording and stop.  could be done in the buttons themselves.
      */
