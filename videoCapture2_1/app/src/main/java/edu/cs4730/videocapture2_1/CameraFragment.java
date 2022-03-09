@@ -39,7 +39,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 /**
- * Note, this uses camera2, since the min SDK is 22+
+ * Note, this uses camera2, not androidx.CameraX or the older camera v1.
  */
 public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
     String TAG = "CameraFragment";
@@ -129,7 +129,6 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
         Log.v(TAG, "Video saved: " + file);
 
         //reset the preview screen.
-        //below api 23, this would just blow up.
         setup2Record();
 
     }
