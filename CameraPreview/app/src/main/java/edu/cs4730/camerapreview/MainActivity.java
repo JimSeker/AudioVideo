@@ -7,7 +7,7 @@ import android.os.Bundle;
 
 public class MainActivity extends AppCompatActivity implements MainFragment.OnFragmentInteractionListener {
 
-    public static final int REQUEST_PERM_ACCESS = 1;
+    //public static final int REQUEST_PERM_ACCESS = 1;
     String TAG = "MainActivity";
     MainFragment myFrag;
 

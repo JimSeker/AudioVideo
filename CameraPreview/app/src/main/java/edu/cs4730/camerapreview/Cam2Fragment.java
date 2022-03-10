@@ -1,9 +1,11 @@
 package edu.cs4730.camerapreview;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
 import android.hardware.camera2.CameraManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 
@@ -11,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -45,11 +48,6 @@ public class Cam2Fragment extends Fragment {
     boolean mIsRecordingVideo = false;
 
 
-    public Cam2Fragment() {
-        // Required empty public constructor
-    }
-
-
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -75,7 +73,6 @@ public class Cam2Fragment extends Fragment {
             e.printStackTrace();
         }
 
-
         // Add a listener to the Capture button
         btn_takepicture = myView.findViewById(R.id.btn_takepicture);
         btn_takepicture.setOnClickListener(
@@ -87,7 +84,7 @@ public class Cam2Fragment extends Fragment {
 
                     // get an image from the camera
                     if (mCapture.reader != null) {  //I'm sure it's setup correctly if reader is not null.
-                        mCapture.TakePicture(getOutputMediaFile(MEDIA_TYPE_IMAGE));
+                        mCapture.TakePicture(getOutputMediaFile(MEDIA_TYPE_IMAGE, false));
                     }
 
                 }
@@ -101,18 +98,15 @@ public class Cam2Fragment extends Fragment {
                     if (mVideo == null) // While I would like the declare this earlier, the camara is not setup yet, so wait until now.
                         mVideo = new Camera2CaptureVid((AppCompatActivity) requireActivity(), mPreview);
 
-
                     if (!mIsRecordingVideo) {  //about to take a video
                         mIsRecordingVideo = true;
                         btn_takevideo.setText("Stop Recording");
-                        mVideo.startRecordingVideo(getOutputMediaFile(MEDIA_TYPE_VIDEO));
+                        mVideo.startRecordingVideo(getOutputMediaFile(MEDIA_TYPE_VIDEO, false));
                     } else {
                         mVideo.stopRecordingVideo();
                         mIsRecordingVideo = false;
                         btn_takevideo.setText("Start Recording");
                     }
-
-
                 }
             }
         );
@@ -123,42 +117,46 @@ public class Cam2Fragment extends Fragment {
     /**
      * Create a File for saving an image or video
      */
-    private static File getOutputMediaFile(int type) {
+    private Uri getOutputMediaFile(int type, boolean local) {
 
-        //creates a directory in pictures.
-        //File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "MyCameraApp");
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        ContentValues values = new ContentValues();
+        File mediaFile;
+        File storageDir;
+        Uri returnUri = null;
 
-        File mediaStorageDir;
         if (type == MEDIA_TYPE_IMAGE) {
-            mediaStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES);
-        } else {
-            mediaStorageDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES);
-        }
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
 
-        // Create the storage directory if it does not exist
-        if (!mediaStorageDir.exists()) {
-            if (!mediaStorageDir.mkdirs()) {
-                Log.d("MyCameraApp", "failed to create directory");
-                return null;
+            if (local) {
+                storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                if (!storageDir.exists()) {
+                    storageDir.mkdirs();
+                }
+                mediaFile = new File(storageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
+                returnUri = Uri.fromFile(mediaFile);
+
+            } else { //onto the sdcard
+                //values.put(MediaStore.Images.Media.TITLE, "IMG_" + timeStamp + ".jpg");  //not needed?
+                values.put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_" + timeStamp + ".jpg");  //file name.
+                values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
+                returnUri = requireContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            }
+        } else if (type == MEDIA_TYPE_VIDEO) {
+            if (local) {
+                storageDir = requireContext().getExternalFilesDir(Environment.DIRECTORY_MOVIES);
+                if (!storageDir.exists()) {
+                    storageDir.mkdirs();
+                }
+                mediaFile = new File(storageDir.getPath() + File.separator + "VID_" + timeStamp + ".mp4");
+                returnUri = Uri.fromFile(mediaFile);
+            } else {
+                //values.put(MediaStore.Images.Media.TITLE, "VID_" + timeStamp + ".mp4");  //not needed?
+                values.put(MediaStore.Video.Media.DISPLAY_NAME, "VID_" + timeStamp + ".mp4");  //file name.
+                values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+                returnUri = requireContext().getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
             }
         }
-
-        // Create a media file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        File mediaFile;
-        if (type == MEDIA_TYPE_IMAGE) {
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                "IMG_" + timeStamp + ".jpg");
-        } else if (type == MEDIA_TYPE_VIDEO) {
-            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-                "VID_" + timeStamp + ".mp4");
-        } else {
-            return null;
-        }
-
-        return mediaFile;
+        return returnUri;
     }
 
 }

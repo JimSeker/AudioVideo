@@ -3,15 +3,24 @@ package edu.cs4730.camerapreview;
 import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
+
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
+
+import java.util.Map;
 
 
 /**
@@ -21,24 +30,39 @@ import android.widget.TextView;
 public class MainFragment extends Fragment {
     String TAG = "MainFragment";
     Button btn1, btn2;
-    TextView label;
+    TextView logger;
     private OnFragmentInteractionListener mListener;
-
-    public MainFragment() {
-        // Required empty public constructor
-    }
-
+    private String[] REQUIRED_PERMISSIONS;
+    ActivityResultLauncher<String[]> rpl;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View myView = inflater.inflate(R.layout.fragment_main, container, false);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
+            REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.RECORD_AUDIO", "android.permission.ACCESS_MEDIA_LOCATION"};
+        } else {
+            REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.RECORD_AUDIO", "android.permission.WRITE_EXTERNAL_STORAGE"};
+        }
+
+        //this allows us to check in the fragment instead of doing it all in the activity.
+        rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
+            new ActivityResultCallback<Map<String, Boolean>>() {
+                @Override
+                public void onActivityResult(Map<String, Boolean> isGranted) {
+                    for (Map.Entry<String, Boolean> x : isGranted.entrySet())
+                        logthis(x.getKey() + " is " + x.getValue());
+                }
+            }
+        );
+
         btn1 = myView.findViewById(R.id.btn_perm);
         btn1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               CheckPerm();
+                rpl.launch(REQUIRED_PERMISSIONS);
             }
         });
         btn2 = myView.findViewById(R.id.btn_cam);
@@ -49,38 +73,29 @@ public class MainFragment extends Fragment {
                     mListener.onFragmentInteraction(1);
             }
         });
-        label = myView.findViewById(R.id.logperm);
+        logger = myView.findViewById(R.id.logger);
 
-        CheckPerm();
+        if (!allPermissionsGranted())
+            rpl.launch(REQUIRED_PERMISSIONS);
+        else
+            logthis("All permissions have been granted already.");
+
 
         return myView;
     }
 
-    public void CheckPerm() {
-        if ((ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) ||
-            (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) ||
-                (ActivityCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED)) {
-            //I'm on not explaining why, just asking for permission.
-            Log.v(TAG, "asking for permissions");
-            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO},
-                    MainActivity.REQUEST_PERM_ACCESS);
-
-        } else {
-            label.setText("Camera access: Granted\n External File access: Granted\n");
-        }
-
+    public void logthis(String msg) {
+        logger.append(msg + "\n");
+        Log.d(TAG, msg);
     }
 
-    public void setPerm(Boolean cam, Boolean file) {
-        if (cam && file) {
-            label.setText("Camera access: Granted\n External File access: Granted\n");
-        } else if (cam) {
-            label.setText("Camera access: Granted\n External File access: NOT\n");
-        } else if (file) {
-            label.setText("Camera access: NOT\n External File access: Granted\n");
-        } else {
-            label.setText("Camera access: NOT\n External File access: NOT\n");
+    private boolean allPermissionsGranted() {
+        for (String permission : REQUIRED_PERMISSIONS) {
+            if (ContextCompat.checkSelfPermission(requireContext(), permission) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
         }
+        return true;
     }
 
     @Override
@@ -90,7 +105,7 @@ public class MainFragment extends Fragment {
             mListener = (OnFragmentInteractionListener) context;
         } else {
             throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
+                + " must implement OnFragmentInteractionListener");
         }
     }
 

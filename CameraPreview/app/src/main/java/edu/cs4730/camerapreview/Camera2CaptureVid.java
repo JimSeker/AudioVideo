@@ -2,6 +2,7 @@ package edu.cs4730.camerapreview;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -11,10 +12,14 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
@@ -31,7 +36,7 @@ import java.util.List;
  * but when you use a player, it's sideways.  I'm not sure how to set orientation in video/pictures.
  * <p>
  * or video, currently look at https://github.com/googlesamples/android-Camera2Video
- *
+ * <p>
  * A note, the video record works once, but the second time i dies on illegalstateexception when it starts.  I don't know why.
  */
 
@@ -50,7 +55,7 @@ public class Camera2CaptureVid {
     CameraCharacteristics characteristics;
     List<Surface> outputSurfaces;
     Handler backgroundHandler;
-    File file;
+    Uri mediaFile;
     CameraCaptureSession mSession;
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
@@ -66,8 +71,6 @@ public class Camera2CaptureVid {
         this.activity = A;
         this.camera2Preview = camera2Preview;
         context = A.getApplicationContext();
-
-
     }
 
     public void setup() {
@@ -119,15 +122,14 @@ public class Camera2CaptureVid {
 
     }
 
-    public void startRecordingVideo(File f) {
-        file = f;
+    public void startRecordingVideo(Uri fileUri) {
+        mediaFile = fileUri;
         try {
             camera2Preview.mPreviewSession.stopRepeating();
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
         setup();
-
 
         //start recording
         mMediaRecorder.start();
@@ -143,12 +145,19 @@ public class Camera2CaptureVid {
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis());
-        values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
-        values.put(MediaStore.MediaColumns.DATA, file.toString());
-        context.getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
-        Toast.makeText(context, "Video saved: " + file, Toast.LENGTH_SHORT).show();
+        String[] filePathColumn = {MediaStore.Video.Media.DATA};
+        Cursor cursor = context.getContentResolver().query(mediaFile, filePathColumn, null, null, null);
+        String file;
+        if (cursor != null) {  //sdcard
+            cursor.moveToFirst();
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            file = cursor.getString(columnIndex);
+            cursor.close();
+        } else { //local
+            file = mediaFile.toString();
+        }
+        Toast.makeText(context, "Saved:" + file, Toast.LENGTH_SHORT).show();
+
         //Log.v(TAG, "Video saved: " + getVideoFile(context));
         Log.v(TAG, "Video saved: " + file);
         //reset the preview screen.
@@ -176,10 +185,12 @@ public class Camera2CaptureVid {
 
     private void setUpMediaRecorder() throws IOException {
 
+        ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(mediaFile, "w");
+        mMediaRecorder.setOutputFile(pfd.getFileDescriptor());
+
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
         mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mMediaRecorder.setOutputFile(file.getAbsolutePath());
         mMediaRecorder.setVideoEncodingBitRate(10000000);
         mMediaRecorder.setVideoFrameRate(30);
         mMediaRecorder.setVideoSize(mVideoSize.getWidth(), mVideoSize.getHeight());
@@ -194,13 +205,7 @@ public class Camera2CaptureVid {
         mMediaRecorder.prepare();
     }
 
-    private File getVideoFile(Context context) {
-        return new File(context.getExternalFilesDir(null), "video.mp4");
-    }
-
-
     CameraCaptureSession.StateCallback mCaptureStateCallback = new CameraCaptureSession.StateCallback() {
-
         @Override
         public void onConfigured(CameraCaptureSession session) {
 
@@ -208,9 +213,7 @@ public class Camera2CaptureVid {
                 mSession = session;
                 //null for capture listener, because mrecoder does the work here!
                 session.setRepeatingRequest(captureBuilder.build(), null, backgroundHandler);
-
             } catch (CameraAccessException e) {
-
                 e.printStackTrace();
             }
         }

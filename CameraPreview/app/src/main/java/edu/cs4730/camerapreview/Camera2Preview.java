@@ -92,15 +92,11 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
         Log.e(TAG, "openCamera End");
     }
 
-
     protected void startPreview() {
-
         if (null == mCameraDevice) {
             Log.e(TAG, "startPreview fail, return");
             return;
         }
-
-
         //get the surface, so I can added to varying places...
        surface = mHolder.getSurface();
 
@@ -139,7 +135,6 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
         if (null == mCameraDevice) {
             Log.e(TAG, "updatePreview error, return");
         }
-
         mPreviewBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
         HandlerThread thread = new HandlerThread("CameraPreview");
         thread.start();
@@ -153,38 +148,26 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
         }
     }
 
-
-    /*
-     * all the listeners, callbacks that are needed here.
-     */
-
-
-    /*
+    // all the listeners, callbacks that are needed here.
+    /**
       This is the callback necessary for the manager.openCamera Call back needed above.
      */
     private CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
-
         @Override
         public void onOpened(CameraDevice camera) {
-
             Log.e(TAG, "onOpened");
             mCameraDevice = camera;
             //setup the capture of the current surface.
             startPreview();
-
-
         }
-
 
         @Override
         public void onDisconnected(CameraDevice camera) {
-
             Log.e(TAG, "onDisconnected");
         }
 
         @Override
         public void onError(CameraDevice camera, int error) {
-
             Log.e(TAG, "onError");
         }
 

@@ -1,7 +1,8 @@
 package edu.cs4730.camerapreview;
 
-import android.content.ContentValues;
+
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.ImageFormat;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
@@ -11,9 +12,10 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.TotalCaptureResult;
-import android.media.ExifInterface;
+import androidx.exifinterface.media.ExifInterface;
 import android.media.Image;
 import android.media.ImageReader;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
@@ -22,9 +24,7 @@ import android.util.Size;
 import android.view.Surface;
 import android.widget.Toast;
 
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -55,7 +55,7 @@ public class Camera2CapturePic {
     Handler backgroudHandler;
     CaptureRequest.Builder captureBuilder;
     List<Surface> outputSurfaces;
-    File file;
+    Uri mediaFileUri;
     int deviceorientation = ORIENTATION_PORTRAIT;
 
 
@@ -111,8 +111,8 @@ public class Camera2CapturePic {
     /**
      * This is the one to call to take a picture.
      */
-    public void TakePicture(File filename) {
-        file = filename;
+    public void TakePicture(Uri fileUri) {
+        mediaFileUri = fileUri;
         try {
             camera2Preview.mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroudHandler);
         } catch (CameraAccessException e) {
@@ -155,8 +155,6 @@ public class Camera2CapturePic {
                 byte[] bytes = new byte[buffer.capacity()];
                 buffer.get(bytes);
                 save(bytes);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -169,11 +167,11 @@ public class Camera2CapturePic {
         private void save(byte[] bytes) throws IOException {
             OutputStream output = null;
             try {
-                output = new FileOutputStream(file);
+                output = context.getContentResolver().openOutputStream(mediaFileUri);
                 output.write(bytes);
-                //orientation
+                //orientation, I don't think this code is working anymore.
                 if (deviceorientation == ORIENTATION_LANDSCAPE) {
-                    ExifInterface exifInterface = new ExifInterface(file.getPath());
+                    ExifInterface exifInterface = new ExifInterface(mediaFileUri.getPath());
                     exifInterface.setAttribute(ExifInterface.TAG_ORIENTATION,
                         String.valueOf(ExifInterface.ORIENTATION_ROTATE_90));
                     exifInterface.saveAttributes();
@@ -192,15 +190,19 @@ public class Camera2CapturePic {
         @Override
         public void onCaptureCompleted(CameraCaptureSession session,
                                        CaptureRequest request, TotalCaptureResult result) {
-
             super.onCaptureCompleted(session, request, result);
-            //new tell the system that the file exists , so it will show up in gallery/photos/whatever
-            ContentValues values = new ContentValues();
-            values.put(MediaStore.Images.Media.DATE_TAKEN, System.currentTimeMillis());
-            values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-            values.put(MediaStore.MediaColumns.DATA, file.toString());
-            context.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
+            //this line is for images only, because this is for picture, not video.  the main code may think both though.
+            String[] filePathColumn = {MediaStore.Images.Media.DATA};
+            Cursor cursor = context.getContentResolver().query(mediaFileUri, filePathColumn, null, null, null);
+            String file;
+            if (cursor != null) {  //sdcard
+                cursor.moveToFirst();
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                file = cursor.getString(columnIndex);
+                cursor.close();
+            } else { //local
+                file = mediaFileUri.toString();
+            }
             Toast.makeText(context, "Saved:" + file, Toast.LENGTH_SHORT).show();
             Log.v(TAG, "Saved:" + file);
             camera2Preview.startPreview();
@@ -209,14 +211,11 @@ public class Camera2CapturePic {
     };
 
     CameraCaptureSession.StateCallback mCaptureStateCallback = new CameraCaptureSession.StateCallback() {
-
         @Override
         public void onConfigured(CameraCaptureSession session) {
-
             try {
                 session.capture(captureBuilder.build(), captureListener, backgroudHandler);
             } catch (CameraAccessException e) {
-
                 e.printStackTrace();
             }
         }
