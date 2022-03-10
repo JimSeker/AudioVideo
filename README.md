@@ -25,7 +25,7 @@ Android Audio and video Examples
 
 `PicCaptureIntent` uses intents to open the camera app, and return just bytes, put a picture in the local directory (with providers), or store onto the sdcard using the mediastore.  So no permissions are necessary for API 28+
 
-`CameraPreview` only the Camera2 APIs and targets API 21+.  The code is broken up into a Preview class that just shows the camera preview in a surfaceview.  A capturePic class (that required the preview class) to take a picture. And there is a VideoClass as well.  This example is far from perfect, but works to show the separation in the classes.
+`CameraPreview` More complex example, that has a Preview class,  capturePic class (that required the preview class) to take a picture, and VideoClass to take video.  This example is far from perfect, but works to show the separation in the classes.  This example only take/records.  It doesn't do any playback.
 
 `CameraXdemo` is a java version of the new cameraX from the androidX libraries.  Note, still beta in some places.
 
@@ -42,7 +42,7 @@ Android Audio and video Examples
 
 `videoCapture2_1` Uses the camera2 to record videos and storages in public movie directory on the sdcard.  It has bottomNavView so you can switch to a player and see the videos you have recorded this session.
 
-`VideoCapture3` shows how to record video with either Camera or Camera2 (API21+).  Note that using Camera in 21+ causes odd results like the video maybe upside down.
+`VideoCapture3` shows how to record video with Camera2 (API21+).  there is no playback of the video.
 
 `VideoCaptureIntent` shows how to ask the video recorder (likely camera) to record for you and store in default directory, inside your app, or onto the sdcard using the mediastore.  So no permissions are necessary.
 
