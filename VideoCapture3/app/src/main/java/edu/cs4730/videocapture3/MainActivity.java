@@ -30,7 +30,10 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
+
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -41,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * This shows how to setup and record a video, while storing in the sdcard (easily switched to local)
@@ -55,7 +59,6 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback {
 
-    private final int REQUEST_CODE_PERMISSIONS = 101;
     private String[] REQUIRED_PERMISSIONS;
     String TAG = "MainActivity";
     boolean mIsRecordingVideo = false;
@@ -80,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     List<Surface> outputSurfaces;
     Handler backgroundHandler;
     CameraCaptureSession mSession;
-
+    ActivityResultLauncher<String[]> rpl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +101,20 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         mHolder = preview.getHolder();
         mHolder.addCallback(this);
 
+        //Use this to check permissions.
+        rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
+            new ActivityResultCallback<Map<String, Boolean>>() {
+                @Override
+                public void onActivityResult(Map<String, Boolean> isGranted) {
+                    if (allPermissionsGranted()) {
+                        openCamera(); //start camera if permission has been granted by user
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                }
+            }
+        );
 
         btn_takevideo = findViewById(R.id.btn_takevideo);
         btn_takevideo.setOnClickListener(
@@ -147,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             e.printStackTrace();
         }
 
-        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+        String[] filePathColumn = {MediaStore.Video.Media.DATA};
         Cursor cursor = getContentResolver().query(mediaFile, filePathColumn, null, null, null);
         String file;
         if (cursor != null) {  //sdcard
@@ -195,7 +212,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             }
         } else {
             Log.e(TAG, "Asking for permissions, then  openCamera again!");
-            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
+            rpl.launch(REQUIRED_PERMISSIONS);
         }
         Log.d(TAG, "openCamera End");
     }
@@ -437,21 +454,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     }
 
     /**
-     * These 2 are for the permissions.
+     * This a helper method to check for the permissions.
      */
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
-                openCamera(); //start camera if permission has been granted by user
-            } else {
-                Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
 
     private boolean allPermissionsGranted() {
         for (String permission : REQUIRED_PERMISSIONS) {
