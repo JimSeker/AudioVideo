@@ -33,12 +33,12 @@ public class PlayFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        myViewModel = new ViewModelProvider(getActivity()).get(videoViewModel.class);
+        myViewModel = new ViewModelProvider(requireActivity()).get(videoViewModel.class);
 
         final View myView = inflater.inflate(R.layout.fragment_play, container, false);
 
         vv = myView.findViewById(R.id.videoView);
-        vv.setMediaController(new MediaController(getActivity()));
+        vv.setMediaController(new MediaController(requireActivity()));
         myContext = getContext();
         mySpinner = myView.findViewById(R.id.spinner);
         mySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -56,7 +56,7 @@ public class PlayFragment extends Fragment {
             }
         });
 
-        myViewModel.getfiles().observe(getActivity(), new Observer<List<String>>() {
+        myViewModel.getfiles().observe(requireActivity(), new Observer<List<String>>() {
             @Override
             public void onChanged(List<String> files) {
                 mfiles = files;

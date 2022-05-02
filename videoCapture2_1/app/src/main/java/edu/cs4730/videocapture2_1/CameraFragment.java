@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -13,9 +14,12 @@ import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -30,8 +34,11 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -58,7 +65,8 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
     CameraCharacteristics characteristics;
     List<Surface> outputSurfaces;
     Handler backgroundHandler;
-    File file;
+    //File file;
+    Uri mFileUri;
     CameraCaptureSession mSession;
     private videoViewModel myViewModel;
 
@@ -118,14 +126,19 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
             e.printStackTrace();
         }
 
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Video.Media.DATE_TAKEN, System.currentTimeMillis());
-        values.put(MediaStore.Video.Media.DATE_ADDED, System.currentTimeMillis());
-        values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
-        values.put(MediaStore.MediaColumns.DATA, file.toString());
-        context.getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+        String[] filePathColumn = {MediaStore.Video.Media.DATA};
+        Cursor cursor = requireActivity().getContentResolver().query(mFileUri, filePathColumn, null, null, null);
+        String file;
+        if (cursor != null) {  //sdcard
+            cursor.moveToFirst();
+            int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+            file = cursor.getString(columnIndex);
+            cursor.close();
+        } else { //local
+            file = mFileUri.toString();
+        }
         Toast.makeText(context, "Video saved: " + file, Toast.LENGTH_SHORT).show();
-        myViewModel.add(file.toString());
+        myViewModel.add(file);
         Log.v(TAG, "Video saved: " + file);
 
         //reset the preview screen.
@@ -235,7 +248,7 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
             try {
                 captureBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
             } catch (CameraAccessException e) {
-                Log.e(TAG, "Failed to get a TEMPLAE_RECORD. done now");
+                Log.e(TAG, "Failed to get a TEMPLATE_RECORD. done now");
                 e.printStackTrace();
                 return;
             }
@@ -284,11 +297,12 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
 
     private void setUpMediaRecorder() throws IOException {
 
-        file = MainActivity.getOutputMediaFile(MainActivity.MEDIA_TYPE_VIDEO); //setup a new filename for every record.
+        mFileUri = getOutputMediaFile(MainActivity.MEDIA_TYPE_VIDEO, false); //setup a new filename for every record.
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
         mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        mMediaRecorder.setOutputFile(file.getAbsolutePath());
+        ParcelFileDescriptor pfd = requireActivity().getContentResolver().openFileDescriptor(mFileUri, "w");
+        mMediaRecorder.setOutputFile(pfd.getFileDescriptor());
         mMediaRecorder.setVideoEncodingBitRate(10000000);
         mMediaRecorder.setVideoFrameRate(30);
         mMediaRecorder.setVideoSize(mVideoSize.getWidth(), mVideoSize.getHeight());
@@ -340,6 +354,65 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
         // the image upright relative to the device orientation
         return (sensorOrientation + deviceOrientation + 360) % 360;
 
+    }
+
+
+    /**
+     * Create a File for saving an image or video
+     */
+    public Uri getOutputMediaFile(int type, boolean local) {
+
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        ContentValues values = new ContentValues();
+        File mediaFile;
+        File storageDir;
+        Uri returnUri = null;
+
+        if (type == MainActivity.MEDIA_TYPE_IMAGE) {
+
+            if (local) {
+                storageDir = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                if (!storageDir.exists()) {
+                    storageDir.mkdirs();
+                }
+                mediaFile = new File(storageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
+                returnUri = Uri.fromFile(mediaFile);
+
+            } else { //onto the sdcard
+                //values.put(MediaStore.Images.Media.TITLE, "IMG_" + timeStamp + ".jpg");  //not needed?
+                values.put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_" + timeStamp + ".jpg");  //file name.
+                values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
+                returnUri = requireActivity().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            }
+        } else if (type == MainActivity.MEDIA_TYPE_VIDEO) {
+            if (local) {
+                storageDir = requireActivity().getExternalFilesDir(Environment.DIRECTORY_MOVIES);
+                if (!storageDir.exists()) {
+                    storageDir.mkdirs();
+                }
+                mediaFile = new File(storageDir.getPath() + File.separator + "VID_" + timeStamp + ".mp4");
+                returnUri = Uri.fromFile(mediaFile);
+            } else {
+                //values.put(MediaStore.Images.Media.TITLE, "VID_" + timeStamp + ".mp4");  //not needed?
+                values.put(MediaStore.Video.Media.DISPLAY_NAME, "VID_" + timeStamp + ".mp4");  //file name.
+                values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+                returnUri = requireActivity().getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+            }
+        } else if (type == MainActivity.MEDIA_TYPE_AUDIO) {
+            if (local) {
+                storageDir = requireActivity().getExternalFilesDir(Environment.DIRECTORY_MUSIC);
+                if (!storageDir.exists()) {
+                    storageDir.mkdirs();
+                }
+                mediaFile = new File(storageDir.getPath() + File.separator + "AUD_" + timeStamp + ".mp4");
+                returnUri = Uri.fromFile(mediaFile);
+            } else {
+                values.put(MediaStore.Audio.Media.DISPLAY_NAME, "AUD_" + timeStamp + ".mp3");  //file name.
+                values.put(MediaStore.Audio.Media.MIME_TYPE, "audio/mp3");
+                returnUri = requireActivity().getContentResolver().insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values);
+            }
+        }
+        return returnUri;
     }
 
 }

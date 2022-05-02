@@ -1,5 +1,6 @@
 package edu.cs4730.videocapture3;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -35,8 +36,8 @@ import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -48,23 +49,23 @@ import java.util.Map;
 
 /**
  * This shows how to setup and record a video, while storing in the sdcard (easily switched to local)
- *
+ * <p>
  * This example does have a problem though.  It creates the file to store the data into before the record button is pressed.
- *   And it assumes you will record another video, once you have stopped.  There is no good way to prevent a
- *   corrupted final file.   Instead there should be a preveiew screen and when the user presses record, it should do
- *   all this work and start the recording.  Then finally press stop and it falls back to a preview instead of a record_template.
- *
- *   A final piece is needed, that starts the default player, so you can see what you recorded.  that is still missing.
+ * And it assumes you will record another video, once you have stopped.  There is no good way to prevent a
+ * corrupted final file.   Instead there should be a preveiew screen and when the user presses record, it should do
+ * all this work and start the recording.  Then finally press stop and it falls back to a preview instead of a record_template.
+ * <p>
+ * A final piece is needed, that starts the default player, so you can see what you recorded.  that is still missing.
  */
 
 public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback {
 
     private String[] REQUIRED_PERMISSIONS;
-    String TAG = "MainActivity";
+    final static String TAG = "MainActivity";
     boolean mIsRecordingVideo = false;
     static int MEDIA_TYPE_IMAGE = 1;
     static int MEDIA_TYPE_VIDEO = 2;
-
+    static int MEDIA_TYPE_AUDIO = 3;
 
     SurfaceView preview;
     public SurfaceHolder mHolder;
@@ -72,8 +73,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
     String cameraId;
     public CameraDevice mCameraDevice;
-    private CaptureRequest.Builder mPreviewBuilder;
-    public CameraCaptureSession mPreviewSession;
     Uri mediaFile;
 
     private Size mVideoSize;
@@ -90,11 +89,10 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
-            REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.RECORD_AUDIO"};
+            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_MEDIA_LOCATION};
         } else {
-            REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.RECORD_AUDIO", "android.permission.WRITE_EXTERNAL_STORAGE"};
+            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         }
-
         preview = findViewById(R.id.camera2_preview);
         // Install a SurfaceHolder.Callback so we get notified when the
         // underlying surface is created and destroyed.
@@ -137,13 +135,14 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     }
 
     @Override
-    public void onPause()  {
+    public void onPause() {
         if (mIsRecordingVideo) {
             stopRecordingVideo();
             mIsRecordingVideo = false;
         }
         super.onPause();
     }
+
     /**
      * These two are helper methods, to start recording and stop.  could be done in the buttons themselves.
      */
@@ -333,8 +332,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mMediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
         mMediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
-        //mMediaRecorder.setOutputFile(file.getAbsolutePath());  //needs to be string.
-
         mMediaRecorder.setVideoEncodingBitRate(10000000);
         mMediaRecorder.setVideoFrameRate(30);
         mMediaRecorder.setVideoSize(mVideoSize.getWidth(), mVideoSize.getHeight());
@@ -357,6 +354,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 e.printStackTrace();
             }
         }
+
         @Override
         public void onConfigureFailed(CameraCaptureSession session) {
             Log.e(TAG, "onConfigureFailed");
@@ -382,7 +380,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         return (sensorOrientation + deviceOrientation + 360) % 360;
 
     }
-
 
     /**
      * These are the 3 required methods for a surfaceview holder.
@@ -410,8 +407,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     /**
      * Create a File for saving an image or video
      */
-    private Uri getOutputMediaFile(int type, boolean local) {
-
+    public Uri getOutputMediaFile(int type, boolean local) {
 
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
         ContentValues values = new ContentValues();
@@ -419,7 +415,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         File storageDir;
         Uri returnUri = null;
 
-        if (type == MEDIA_TYPE_IMAGE) {
+        if (type == MainActivity.MEDIA_TYPE_IMAGE) {
 
             if (local) {
                 storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
@@ -435,7 +431,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
                 returnUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
             }
-        } else if (type == MEDIA_TYPE_VIDEO) {
+        } else if (type == MainActivity.MEDIA_TYPE_VIDEO) {
             if (local) {
                 storageDir = getExternalFilesDir(Environment.DIRECTORY_MOVIES);
                 if (!storageDir.exists()) {
@@ -449,9 +445,23 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
                 returnUri = getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
             }
+        } else if (type == MainActivity.MEDIA_TYPE_AUDIO) {
+            if (local) {
+                storageDir = getExternalFilesDir(Environment.DIRECTORY_MUSIC);
+                if (!storageDir.exists()) {
+                    storageDir.mkdirs();
+                }
+                mediaFile = new File(storageDir.getPath() + File.separator + "AUD_" + timeStamp + ".mp4");
+                returnUri = Uri.fromFile(mediaFile);
+            } else {
+                values.put(MediaStore.Audio.Media.DISPLAY_NAME, "AUD_" + timeStamp + ".mp3");  //file name.
+                values.put(MediaStore.Audio.Media.MIME_TYPE, "audio/mp3");
+                returnUri = getContentResolver().insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values);
+            }
         }
         return returnUri;
     }
+
 
     /**
      * This a helper method to check for the permissions.
