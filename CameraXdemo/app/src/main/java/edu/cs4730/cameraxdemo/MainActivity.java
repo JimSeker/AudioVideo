@@ -99,13 +99,18 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     try {
-                        ProcessCameraProvider cameraProvider = (ProcessCameraProvider) cameraProviderFuture.get();
+                        ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
                         Preview preview = (new Preview.Builder()).build();
                         preview.setSurfaceProvider(viewFinder.getSurfaceProvider());
 
-                        imageCapture = (new ImageCapture.Builder()).build();
-                        CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+                        imageCapture = new ImageCapture.Builder()
+                            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                            .build();
 
+                        CameraSelector cameraSelector = new CameraSelector.Builder()
+                            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                            .build();
+                        
                         // Unbind use cases before rebinding
                         cameraProvider.unbindAll();
 
