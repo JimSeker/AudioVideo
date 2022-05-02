@@ -1,5 +1,8 @@
 package edu.cs4730.cameraxdemo;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.annotation.NonNull;
 import androidx.camera.core.CameraSelector;
@@ -8,9 +11,9 @@ import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import android.Manifest;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -25,6 +28,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -39,9 +43,7 @@ public class MainActivity extends AppCompatActivity {
     String TAG = "MainActivity";
     private static final String FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS";
     private ImageCapture imageCapture;
-    private File outputDirectory;
-
-    private final int REQUEST_CODE_PERMISSIONS = 101;
+    ActivityResultLauncher<String[]> rpl;
     private  String[] REQUIRED_PERMISSIONS;
     PreviewView viewFinder;
     Button take_photo;
@@ -54,11 +56,23 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
-            REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA"};
+            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
         } else {
-            REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE"};
+            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         }
-
+        rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
+            new ActivityResultCallback<Map<String, Boolean>>() {
+                @Override
+                public void onActivityResult(Map<String, Boolean> isGranted) {
+                    if (allPermissionsGranted()) {
+                        startCamera();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                }
+            }
+        );
         viewFinder = findViewById(R.id.viewFinder);
         take_photo = findViewById(R.id.camera_capture_button);
         take_photo.setOnClickListener(new View.OnClickListener() {
@@ -71,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         if (allPermissionsGranted()) {
             startCamera(); //start camera if permission has been granted by user
         } else {
-            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
+            rpl.launch(REQUIRED_PERMISSIONS);
         }
     }
 
@@ -146,22 +160,6 @@ public class MainActivity extends AppCompatActivity {
             return mediadir;
         else
             return getFilesDir();
-    }
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-
-
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
-                startCamera();
-            } else {
-                Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private boolean allPermissionsGranted() {
