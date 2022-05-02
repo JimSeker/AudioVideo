@@ -110,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
                         CameraSelector cameraSelector = new CameraSelector.Builder()
                             .requireLensFacing(CameraSelector.LENS_FACING_BACK)
                             .build();
-                        
+
                         // Unbind use cases before rebinding
                         cameraProvider.unbindAll();
 
