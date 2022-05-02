@@ -2,8 +2,10 @@ package edu.cs4730.AudioPlay;
 
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -22,41 +24,37 @@ public class MainActivity extends AppCompatActivity {
     MediaPlayer mediaPlayer;
     int playbackPosition = 0;
     boolean localfile = false;
-
-
-    Button btnStartl, btnStart, btnPause, btnRestart;
-
+    TextView logger;
+    static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        btnStartl = findViewById(R.id.btnPlayLocal);
-        btnStartl.setOnClickListener(new View.OnClickListener() {
+        logger = findViewById(R.id.logger);
+
+        findViewById(R.id.btnPlayLocal).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 playAudioResource();
             }
         });
         // play button, using remote file.
-        btnStart = findViewById(R.id.btnPlay);
-        btnStart.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btnPlay).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 playAudio(AUDIO_PATH);
             }
         });
         //pause the audio.
-        btnPause = findViewById(R.id.btnPause);
-        btnPause.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btnPause).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 pauseAudio();
             }
         });
         //restart the audio.
-        btnRestart = findViewById(R.id.btnRestart);
-        btnRestart.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btnRestart).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 restartAudio();
@@ -71,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         if (mediaPlayer != null && mediaPlayer.isPlaying()) {
             playbackPosition = mediaPlayer.getCurrentPosition();
             mediaPlayer.pause();
+            logthis("Media paused");
         }
     }
 
@@ -85,10 +84,11 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.seekTo(0);
         }
         if (mediaPlayer.isPlaying()) {  //duh don't start it again.
-            Toast.makeText(this, "I'm playing already", Toast.LENGTH_SHORT).show();
+           logthis("I'm playing already");
             return;
         }
         //finally play!
+        logthis("Started local");
         mediaPlayer.start();
     }
 
@@ -103,17 +103,17 @@ public class MainActivity extends AppCompatActivity {
                 mediaPlayer.setDataSource(url);
                 mediaPlayer.prepare();
             } catch (Exception e) {
-                Toast.makeText(this, "Exception, not playing",
-                    Toast.LENGTH_SHORT).show();
-                System.out.println("Player exception is " + e.getMessage());
+                logthis("Exception, not playing");
+                e.printStackTrace();
                 return;
             }
         } else if (mediaPlayer.isPlaying()) {  //duh don't start it again.
-            Toast.makeText(this, "I'm playing already", Toast.LENGTH_SHORT).show();
+            logthis( "I'm playing already");
             return;
         } else {  //play it at least one, reset and play again.
             mediaPlayer.seekTo(0);
         }
+        logthis("Started from internet/url");
         mediaPlayer.start();
 
     }
@@ -126,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
         if (mediaPlayer != null && !mediaPlayer.isPlaying()) {
             mediaPlayer.seekTo(playbackPosition);
             mediaPlayer.start();
+            logthis("Media restarted");
         }
     }
 
@@ -152,5 +153,12 @@ public class MainActivity extends AppCompatActivity {
         KillMediaPlayer();
         super.onDestroy();
     }
+
+    //A simple method to append data to the logger textview.
+    public void logthis(String msg) {
+        logger.append(msg + "\n");
+        Log.d(TAG, msg);
+    }
+
 
 }
