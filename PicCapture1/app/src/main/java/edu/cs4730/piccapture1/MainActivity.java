@@ -1,11 +1,15 @@
 package edu.cs4730.piccapture1;
 
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.DialogFragment;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
@@ -47,19 +51,23 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
- *  using the camera2 (api 21+) methods to capture a picture and store in either the sdcard or local to the app.
- *  This example just takes the picture. then calls a dialog to display the picture. 
- *  the logcat and toast show the files has been stored.
- *
- *  honesty, the new androidX cameraX methods are simpler.  and should be used, unless you are doing something more specific.
+ * using the camera2 (api 21+) methods to capture a picture and store in either the sdcard or local to the app.
+ * This example just takes the picture. then calls a dialog to display the picture.
+ * the logcat and toast show the files has been stored.
+ * <p>
+ * honesty, the new androidX cameraX methods are simpler.  and should be used, unless you are doing something more specific.
  */
 
-public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback{
+public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback {
 
-    private final int REQUEST_CODE_PERMISSIONS = 101;
     private String[] REQUIRED_PERMISSIONS;
+    ActivityResultLauncher<String[]> rpl;
+    static int MEDIA_TYPE_IMAGE = 1;
+    static int MEDIA_TYPE_VIDEO = 2;
+    static int MEDIA_TYPE_AUDIO = 3;
 
     SurfaceView cameraView;
     SurfaceHolder surfaceHolder;
@@ -81,21 +89,30 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     //File file;
     Uri imageFileUri;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
-            REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA"};
+            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
         } else {
-            REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE"};
+            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         }
-
-
+        rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
+            new ActivityResultCallback<Map<String, Boolean>>() {
+                @Override
+                public void onActivityResult(Map<String, Boolean> isGranted) {
+                    if (allPermissionsGranted()) {
+                        openCamera(); //start camera if permission has been granted by user
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                }
+            }
+        );
         cameraView = findViewById(R.id.CameraView2);
-
         //setup the preview for the camera.
         surfaceHolder = cameraView.getHolder();
         surfaceHolder.addCallback(this);
@@ -104,13 +121,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             @Override
             public void onClick(View view) {
                 //create a file in the local app pictures directory.
-                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-                File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-                if (! storageDir.exists()) {
-                    storageDir.mkdirs();
-                }
-                File mediaFile = new File(storageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
-                imageFileUri = Uri.fromFile(mediaFile);
+                imageFileUri = getOutputMediaFile(MEDIA_TYPE_IMAGE, true);
                 try {
                     mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroudHandler);
                 } catch (CameraAccessException e) {
@@ -124,15 +135,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             @Override
             public void onClick(View view) {
                 //this get a unique file name with .jpg in the media pictures directory.
-                //imageFileUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new ContentValues());
-
-                //or use this to set the name manually.
-                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-                ContentValues values = new ContentValues();
-                //values.put(MediaStore.Images.Media.TITLE, "IMG_" + timeStamp + ".jpg");  //not needed?
-                values.put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_" + timeStamp + ".jpg");  //file name.
-                values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
-                imageFileUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                imageFileUri = getOutputMediaFile(MEDIA_TYPE_IMAGE, false);
                 try {
                     mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroudHandler);
                 } catch (CameraAccessException e) {
@@ -140,8 +143,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 }
             }
         });
-
-
     }
 
     /**
@@ -254,7 +255,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             Log.e(TAG, "startPreview fail, return");
             return;
         }
-
 
         //get the surface, so I can added to varing places...
         Surface surface = surfaceHolder.getSurface();
@@ -374,11 +374,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             });
             startPreview();
         }
-
     };
 
     CameraCaptureSession.StateCallback mCaptureStateCallback = new CameraCaptureSession.StateCallback() {
-
         @Override
         public void onConfigured(CameraCaptureSession session) {
 
@@ -395,18 +393,17 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             Log.v(TAG, "OnConfigureFailed");
         }
     };
+
     /**
      * These are the 3 required methods for a surfaceview holder.
-     *
      */
-
     @Override
     public void surfaceCreated(@NonNull SurfaceHolder surfaceHolder) {
         Log.e(TAG, "Surfaceview Created");
         if (allPermissionsGranted()) {
             openCamera(); //start camera if permission has been granted by user
         } else {
-            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
+            rpl.launch(REQUIRED_PERMISSIONS);
         }
     }
 
@@ -422,23 +419,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         }
     }
 
-    /**
-     *   These 2 are for the permissions.
-     */
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
-                openCamera(); //start camera if permission has been granted by user
-            } else {
-                Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
-
     private boolean allPermissionsGranted() {
         for (String permission : REQUIRED_PERMISSIONS) {
             if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
@@ -446,6 +426,64 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             }
         }
         return true;
+    }
+
+    /**
+     * Create a File for saving an image or video
+     */
+    public Uri getOutputMediaFile(int type, boolean local) {
+
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        ContentValues values = new ContentValues();
+        File mediaFile;
+        File storageDir;
+        Uri returnUri = null;
+
+        if (type == MainActivity.MEDIA_TYPE_IMAGE) {
+
+            if (local) {
+                storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+                if (!storageDir.exists()) {
+                    storageDir.mkdirs();
+                }
+                mediaFile = new File(storageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
+                returnUri = Uri.fromFile(mediaFile);
+
+            } else { //onto the sdcard
+                //values.put(MediaStore.Images.Media.TITLE, "IMG_" + timeStamp + ".jpg");  //not needed?
+                values.put(MediaStore.Images.Media.DISPLAY_NAME, "IMG_" + timeStamp + ".jpg");  //file name.
+                values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpg");
+                returnUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            }
+        } else if (type == MainActivity.MEDIA_TYPE_VIDEO) {
+            if (local) {
+                storageDir = getExternalFilesDir(Environment.DIRECTORY_MOVIES);
+                if (!storageDir.exists()) {
+                    storageDir.mkdirs();
+                }
+                mediaFile = new File(storageDir.getPath() + File.separator + "VID_" + timeStamp + ".mp4");
+                returnUri = Uri.fromFile(mediaFile);
+            } else {
+                //values.put(MediaStore.Images.Media.TITLE, "VID_" + timeStamp + ".mp4");  //not needed?
+                values.put(MediaStore.Video.Media.DISPLAY_NAME, "VID_" + timeStamp + ".mp4");  //file name.
+                values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
+                returnUri = getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
+            }
+        } else if (type == MainActivity.MEDIA_TYPE_AUDIO) {
+            if (local) {
+                storageDir = getExternalFilesDir(Environment.DIRECTORY_MUSIC);
+                if (!storageDir.exists()) {
+                    storageDir.mkdirs();
+                }
+                mediaFile = new File(storageDir.getPath() + File.separator + "AUD_" + timeStamp + ".mp4");
+                returnUri = Uri.fromFile(mediaFile);
+            } else {
+                values.put(MediaStore.Audio.Media.DISPLAY_NAME, "AUD_" + timeStamp + ".mp3");  //file name.
+                values.put(MediaStore.Audio.Media.MIME_TYPE, "audio/mp3");
+                returnUri = getContentResolver().insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, values);
+            }
+        }
+        return returnUri;
     }
 
 
