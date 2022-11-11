@@ -62,9 +62,9 @@ public class Cam2Fragment extends Fragment {
         try {
             String cameraId = manager.getCameraIdList()[0];
             CameraCharacteristics cc = manager.getCameraCharacteristics(cameraId);
-            int[] map = cc.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
-            //its 3 on a pixel and I can't find what that actually means....
-            Log.e("CameraDepth value", "Value is " + map[CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_DEPTH_OUTPUT]);
+            //int[] map = cc.get(CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES);
+            //its 3 on a pixel and I can't find what that actually means....  and a pixel4a dies on array bounds error.
+//            Log.e("CameraDepth value", "Value is " + map[CameraCharacteristics.REQUEST_AVAILABLE_CAPABILITIES_DEPTH_OUTPUT]);
             mPreview = new Camera2Preview(requireContext(), cameraId);
             preview.addView(mPreview);
 
