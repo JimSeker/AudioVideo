@@ -1,6 +1,8 @@
 package edu.cs4730.cameraxvideodemo;
 
-import androidx.annotation.NonNull;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageCapture;
@@ -15,7 +17,6 @@ import androidx.camera.video.Recording;
 import androidx.camera.video.VideoCapture;
 import androidx.camera.video.VideoRecordEvent;
 import androidx.camera.view.PreviewView;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.util.Consumer;
 
@@ -35,9 +36,9 @@ import android.widget.Toast;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -48,9 +49,8 @@ public class MainActivity extends AppCompatActivity {
     private static final String FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS";
     private VideoCapture<Recorder> videoCapture;
     private Recording currentRecording;
-    private File outputDirectory;
 
-    private int REQUEST_CODE_PERMISSIONS = 101;
+    ActivityResultLauncher<String[]> rpl;
     private String[] REQUIRED_PERMISSIONS;
     PreviewView viewFinder;
     Button take_photo;
@@ -75,10 +75,23 @@ public class MainActivity extends AppCompatActivity {
         } else {
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO};
         }
+        rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
+            new ActivityResultCallback<Map<String, Boolean>>() {
+                @Override
+                public void onActivityResult(Map<String, Boolean> isGranted) {
+                    if (allPermissionsGranted()) {
+                        startCamera();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
+                        finish();
+                    }
+                }
+            }
+        );
         if (allPermissionsGranted()) {
             startCamera(); //start camera if permission has been granted by user
         } else {
-            ActivityCompat.requestPermissions(this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
+            rpl.launch(REQUIRED_PERMISSIONS);
         }
     }
 
@@ -159,9 +172,8 @@ public class MainActivity extends AppCompatActivity {
                             Cursor cursor = null;
                             String path = "";
                             try {
-                                cursor = getContentResolver().query(savedUri, new String[] { MediaStore.MediaColumns.DATA }, null, null, null);
+                                cursor = getContentResolver().query(savedUri, new String[]{MediaStore.MediaColumns.DATA}, null, null, null);
                                 cursor.moveToFirst();
-
                                 path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
                             } finally {
                                 cursor.close();
@@ -182,33 +194,6 @@ public class MainActivity extends AppCompatActivity {
             take_photo.setText("Stop Rec");
         }
 
-    }
-
-    File getOutputDirectory() {
-        File[] list = getExternalMediaDirs();
-        File mediadir = null;
-        if (list[0] != null) {
-            mediadir = new File(list[0], getResources().getString(R.string.app_name));
-            mediadir.mkdirs();
-        }
-        if (mediadir != null && mediadir.exists())
-            return mediadir;
-        else
-            return getFilesDir();
-    }
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            if (allPermissionsGranted()) {
-                startCamera();
-            } else {
-                Toast.makeText(this, "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        }
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
     private boolean allPermissionsGranted() {
