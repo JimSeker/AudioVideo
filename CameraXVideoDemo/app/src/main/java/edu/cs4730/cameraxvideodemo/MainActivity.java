@@ -1,20 +1,33 @@
 package edu.cs4730.cameraxvideodemo;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
+import androidx.camera.core.ImageCapture;
 import androidx.camera.core.Preview;
-import androidx.camera.core.VideoCapture;
 import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.video.FallbackStrategy;
+import androidx.camera.video.MediaStoreOutputOptions;
+import androidx.camera.video.Quality;
+import androidx.camera.video.QualitySelector;
+import androidx.camera.video.Recorder;
+import androidx.camera.video.Recording;
+import androidx.camera.video.VideoCapture;
+import androidx.camera.video.VideoRecordEvent;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.util.Consumer;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.ContentValues;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -33,11 +46,12 @@ public class MainActivity extends AppCompatActivity {
 
     String TAG = "MainActivity";
     private static final String FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS";
-    private VideoCapture videoCapture;
+    private VideoCapture<Recorder> videoCapture;
+    private Recording currentRecording;
     private File outputDirectory;
 
     private int REQUEST_CODE_PERMISSIONS = 101;
-    private final String[] REQUIRED_PERMISSIONS = new String[]{"android.permission.CAMERA", "android.permission.WRITE_EXTERNAL_STORAGE", "android.permission.RECORD_AUDIO"};
+    private String[] REQUIRED_PERMISSIONS;
     PreviewView viewFinder;
     Button take_photo;
     ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -53,10 +67,14 @@ public class MainActivity extends AppCompatActivity {
         take_photo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                takePhoto();
+                takeVideo();
             }
         });
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
+            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
+        } else {
+            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO};
+        }
         if (allPermissionsGranted()) {
             startCamera(); //start camera if permission has been granted by user
         } else {
@@ -67,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("RestrictedApi")
     private void startCamera() {
 
-        ListenableFuture cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
 
 
         cameraProviderFuture.addListener(
@@ -80,19 +98,19 @@ public class MainActivity extends AppCompatActivity {
                         preview.setSurfaceProvider(viewFinder.getSurfaceProvider());
 
                         CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
-                        VideoCapture.Builder vc = new VideoCapture.Builder()
-                            .setCameraSelector(cameraSelector)
-                            .setTargetRotation(viewFinder.getDisplay().getRotation());
 
-                        videoCapture = vc.build();
-
-
+                        Recorder recorder = new Recorder.Builder()
+                            .setQualitySelector(QualitySelector.from(Quality.HIGHEST,
+                                FallbackStrategy.higherQualityOrLowerThan(Quality.SD)))
+                            .build();
+                        videoCapture = VideoCapture.withOutput(recorder);
+                        ImageCapture imageCatpure = new ImageCapture.Builder().build();
                         // Unbind use cases before rebinding
                         cameraProvider.unbindAll();
 
                         // Bind use cases to camera
                         cameraProvider.bindToLifecycle(
-                            MainActivity.this, cameraSelector, preview, videoCapture);
+                            MainActivity.this, cameraSelector, preview, imageCatpure, videoCapture);
 
 
                     } catch (Exception e) {
@@ -105,37 +123,60 @@ public class MainActivity extends AppCompatActivity {
 
 
     @SuppressLint({"RestrictedApi", "MissingPermission"})
-    public final void takePhoto() {
+    public final void takeVideo() {
 
         if (videoCapture == null) return;
         if (executor == null) return;
 
         if (recording) {  //ie already started.
-            videoCapture.stopRecording();
+            currentRecording.stop();
             recording = false;
             take_photo.setText("Start Rec");
         } else {
+            String name = "CameraX-" + (new SimpleDateFormat(FILENAME_FORMAT, Locale.US)).format(System.currentTimeMillis()) + ".mp4";
+            ContentValues cv = new ContentValues();
+            cv.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+            cv.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+                cv.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/CameraX-Video");
+            }
 
-            File photoFile = new File(getOutputDirectory(),
-                (new SimpleDateFormat(FILENAME_FORMAT, Locale.US)).format(System.currentTimeMillis()) + ".mp4");
-            VideoCapture.OutputFileOptions outputOptions = new VideoCapture.OutputFileOptions.Builder(photoFile).build();
+            MediaStoreOutputOptions mediaStoreOutputOptions = new MediaStoreOutputOptions.Builder(
+                getContentResolver(),
+                MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+                .setContentValues(cv)
+                .build();
 
-            videoCapture.startRecording(outputOptions, executor, new VideoCapture.OnVideoSavedCallback() {
+            currentRecording = ((Recorder) videoCapture.getOutput())
+                .prepareRecording(MainActivity.this, mediaStoreOutputOptions)
+                .withAudioEnabled()
+                .start(executor, new Consumer<VideoRecordEvent>() {
                     @Override
-                    public void onVideoSaved(@NonNull VideoCapture.OutputFileResults outputFileResults) {
-                        Uri savedUri = Uri.fromFile(photoFile);
-                        String msg = "Video capture succeeded: " + savedUri;
-                        runOnUiThread(() -> Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show());
-                        Log.d(TAG, msg);
-                    }
+                    public void accept(VideoRecordEvent videoRecordEvent) {
+                        if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
+                            Uri savedUri = ((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri();
+                            //convert uri to useful name.
+                            Cursor cursor = null;
+                            String path = "";
+                            try {
+                                cursor = getContentResolver().query(savedUri, new String[] { MediaStore.MediaColumns.DATA }, null, null, null);
+                                cursor.moveToFirst();
 
-                    @Override
-                    public void onError(int videoCaptureError, @NonNull String message, @Nullable Throwable cause) {
-                        Log.e(TAG, "Video capture failed: " + message);
+                                path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
+                            } finally {
+                                cursor.close();
+                            }
+                            Log.wtf(TAG, path);
+                            if (path.equals("")) {
+                                path = savedUri.toString();
+                            }
+                            String msg = "Video capture succeeded: " + path;
+                            runOnUiThread(() -> Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show());
+                            Log.d(TAG, msg);
+                            currentRecording = null;
+                        }
                     }
-                }
-
-            );
+                });
 
             recording = true;
             take_photo.setText("Stop Rec");
