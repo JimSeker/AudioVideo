@@ -57,9 +57,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {  //for API 33+
+            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES};
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q)
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
-        } else {
+        } else {  //, for 26 to 28.
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         }
         rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
