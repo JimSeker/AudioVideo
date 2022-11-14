@@ -7,19 +7,19 @@
 
     <fragment
         android:id="@+id/navigation_home"
-        android:name="edu.cs4730.videocapture2_1.HomeFragment"
+        android:name="edu.cs4730.videocapture2.HomeFragment"
         android:label="@string/title_home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/navigation_dashboard"
-        android:name="edu.cs4730.videocapture2_1.CameraFragment"
+        android:name="edu.cs4730.videocapture2.CameraFragment"
         android:label="@string/title_dashboard"
         tools:layout="@layout/fragment_camera" />
 
     <fragment
         android:id="@+id/navigation_notifications"
-        android:name="edu.cs4730.videocapture2_1.PlayFragment"
+        android:name="edu.cs4730.videocapture2.PlayFragment"
         android:label="@string/title_notifications"
         tools:layout="@layout/fragment_play" />
 </navigation>

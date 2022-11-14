@@ -1,4 +1,4 @@
-package edu.cs4730.videocapture2_1;
+package edu.cs4730.videocapture2;
 
 import android.content.Context;
 import android.net.Uri;

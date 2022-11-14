@@ -1,4 +1,4 @@
-package edu.cs4730.videocapture2_1;
+package edu.cs4730.videocapture2;
 
 import java.util.ArrayList;
 import java.util.List;
