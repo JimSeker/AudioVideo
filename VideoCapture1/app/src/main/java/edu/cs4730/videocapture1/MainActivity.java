@@ -1,4 +1,4 @@
-package edu.cs4730.videocapture3;
+package edu.cs4730.videocapture1;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -54,6 +54,8 @@ import java.util.Map;
  * And it assumes you will record another video, once you have stopped.  There is no good way to prevent a
  * corrupted final file.   Instead there should be a preveiew screen and when the user presses record, it should do
  * all this work and start the recording.  Then finally press stop and it falls back to a preview instead of a record_template.
+ * Note, this should setup a preview screen first. when the record button is pushed, then changes to a record sessions
+ * (which this example does by default.).  see VideoCapture2 for the preview plus, capture.
  * <p>
  * A final piece is needed, that starts the default player, so you can see what you recorded.  that is still missing.
  */
@@ -88,9 +90,11 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { //api 33+
+            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_MEDIA_LOCATION, Manifest.permission.READ_MEDIA_VIDEO};
+        } else  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q),
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_MEDIA_LOCATION};
-        } else {
+        } else {  //for 26 to 28.
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         }
         preview = findViewById(R.id.camera2_preview);
