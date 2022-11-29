@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
@@ -15,8 +16,8 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -33,6 +34,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var rpl: ActivityResultLauncher<Array<String>>
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
+    lateinit var camera_capture_button : Button
+    lateinit var viewFinder: PreviewView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -57,7 +60,9 @@ class MainActivity : AppCompatActivity() {
             rpl.launch(REQUIRED_PERMISSIONS)
         }
 
+        viewFinder = findViewById(R.id.viewFinder)
         // Set up the listener for take photo button
+        camera_capture_button = findViewById(R.id.camera_capture_button)
         camera_capture_button.setOnClickListener { takePhoto() }
 
         outputDirectory = getOutputDirectory()

@@ -2,7 +2,6 @@ plugins {
     id 'com.android.application'
     id 'kotlin-android'
 }
-apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 33
@@ -14,8 +13,6 @@ android {
         targetSdkVersion 33
         versionCode 1
         versionName "1.0"
-
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {

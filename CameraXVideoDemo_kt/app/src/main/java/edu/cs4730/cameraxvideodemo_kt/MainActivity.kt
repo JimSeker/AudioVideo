@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,8 +20,8 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
 import androidx.camera.video.VideoRecordEvent.Finalize
+import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
-import kotlinx.android.synthetic.main.activity_main.*
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -30,13 +31,14 @@ import java.util.concurrent.Executors
  * based on https://codelabs.developers.google.com/codelabs/camerax-getting-started#0
  */
 
-
 class MainActivity : AppCompatActivity() {
     private var videoCapture: VideoCapture<Recorder>? = null
     private var currentRecording: Recording? = null
     lateinit var rpl: ActivityResultLauncher<Array<String>>
     private lateinit var cameraExecutor: ExecutorService
     var recording: Boolean = false
+    lateinit var camera_capture_button : Button
+    lateinit var viewFinder: PreviewView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,7 +75,9 @@ class MainActivity : AppCompatActivity() {
             rpl.launch(REQUIRED_PERMISSIONS)
         }
 
+        viewFinder = findViewById(R.id.viewFinder)
         // Set up the listener for take photo button
+        camera_capture_button = findViewById(R.id.camera_capture_button)
         camera_capture_button.setOnClickListener { takeVideo() }
 
         cameraExecutor = Executors.newSingleThreadExecutor()
