@@ -4,18 +4,15 @@ import android.Manifest;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import java.io.File;
@@ -29,6 +26,8 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+
+import edu.cs4730.piccapture2.databinding.ActivityMainBinding;
 
 /**
  * The user presses a button in order to capture the picture and the surfaceview is a separate class.
@@ -46,18 +45,17 @@ public class MainActivity extends AppCompatActivity {
     static int MEDIA_TYPE_VIDEO = 2;
     static int MEDIA_TYPE_AUDIO = 3;
     Camera2Preview mPreview;
-    FrameLayout preview;
+    ActivityMainBinding binding;
 
     Uri mediaFileUri;
-    //for threading and communication,
-    protected Handler handler;
-    Bitmap bitmap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {  //for API 33+
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {  //for API 33+
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES};
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q)
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
@@ -77,8 +75,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         );
-
-        preview = findViewById(R.id.camera2_preview);
 
         // Button SDcard capture
         findViewById(R.id.buttonsd).setOnClickListener(
@@ -134,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
                         }).start();
                     }
                 });
-                preview.addView(mPreview);
+                binding.camera2Preview.addView(mPreview);
             } catch (CameraAccessException e) {
                 Log.v(TAG, "Failed to get a camera ID!");
                 e.printStackTrace();

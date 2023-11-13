@@ -1,5 +1,6 @@
 package edu.cs4730.piccapture1;
 
+
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
@@ -11,15 +12,14 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.view.ContextThemeWrapper;
-import androidx.core.app.DialogCompat;
 import androidx.fragment.app.DialogFragment;
 
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.ImageView;
 
 import java.io.IOException;
+
+import edu.cs4730.piccapture1.databinding.FragmentDisplayPicBinding;
 
 /**
  * displays the new picture.
@@ -27,7 +27,7 @@ import java.io.IOException;
 public class DisplayPicFragment extends DialogFragment {
 
     Uri picUri;
-
+    FragmentDisplayPicBinding binding;
     //take the parameters.
     public static DisplayPicFragment newInstance(Uri mediaUri) {
         DisplayPicFragment frag = new DisplayPicFragment();
@@ -44,28 +44,24 @@ public class DisplayPicFragment extends DialogFragment {
 
         picUri = Uri.parse(requireArguments().getString("uri"));
         Log.wtf("dialog", picUri.toString());
-        ImageView iv;
 
-        LayoutInflater inflater = LayoutInflater.from(requireActivity());
-        View myView = inflater.inflate(R.layout.fragment_display_pic, null);
-        iv = myView.findViewById(R.id.imageView);
+        binding = FragmentDisplayPicBinding.inflate(LayoutInflater.from(requireActivity()));
         Bitmap bitmap;
         try {
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-                bitmap = ImageDecoder.decodeBitmap(
-                    ImageDecoder.createSource(requireActivity().getContentResolver(), picUri)
-                );
+                //at some point, I need to do this correctly.  but it still works, so ignoring it.
+                bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(requireActivity().getContentResolver(), picUri));
             } else {
                 bitmap = BitmapFactory.decodeStream(requireActivity().getContentResolver().openInputStream(picUri));
             }
-            iv.setImageBitmap(bitmap);
+            binding.imageView.setImageBitmap(bitmap);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(new ContextThemeWrapper(requireActivity(), R.style.AppTheme_dialog));
-        builder.setView(myView).setTitle("Picture Taken.");
+        builder.setView(binding.getRoot()).setTitle("Picture Taken.");
         builder.setPositiveButton("Dismiss", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {

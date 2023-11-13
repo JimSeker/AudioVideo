@@ -10,7 +10,6 @@ import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
@@ -20,7 +19,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -31,6 +29,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import edu.cs4730.cameraxdemo.databinding.ActivityMainBinding;
 
 
 /**
@@ -44,16 +44,17 @@ public class MainActivity extends AppCompatActivity {
     private static final String FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS";
     private ImageCapture imageCapture;
     ActivityResultLauncher<String[]> rpl;
-    private  String[] REQUIRED_PERMISSIONS;
-    PreviewView viewFinder;
-    Button take_photo;
+    private String[] REQUIRED_PERMISSIONS;
+    //PreviewView viewFinder;
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
+    ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
@@ -61,21 +62,21 @@ public class MainActivity extends AppCompatActivity {
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         }
         rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
-            new ActivityResultCallback<Map<String, Boolean>>() {
-                @Override
-                public void onActivityResult(Map<String, Boolean> isGranted) {
-                    if (allPermissionsGranted()) {
-                        startCamera();
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
-                        finish();
+                new ActivityResultCallback<Map<String, Boolean>>() {
+                    @Override
+                    public void onActivityResult(Map<String, Boolean> isGranted) {
+                        if (allPermissionsGranted()) {
+                            startCamera();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
+                            finish();
+                        }
                     }
                 }
-            }
         );
-        viewFinder = findViewById(R.id.viewFinder);
-        take_photo = findViewById(R.id.camera_capture_button);
-        take_photo.setOnClickListener(new View.OnClickListener() {
+
+
+        binding.cameraCaptureButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 takePhoto();
@@ -95,35 +96,35 @@ public class MainActivity extends AppCompatActivity {
 
 
         cameraProviderFuture.addListener(
-            new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
-                        Preview preview = (new Preview.Builder()).build();
-                        preview.setSurfaceProvider(viewFinder.getSurfaceProvider());
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+                            Preview preview = (new Preview.Builder()).build();
+                            preview.setSurfaceProvider(binding.viewFinder.getSurfaceProvider());
 
-                        imageCapture = new ImageCapture.Builder()
-                            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                            .build();
+                            imageCapture = new ImageCapture.Builder()
+                                    .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                                    .build();
 
-                        CameraSelector cameraSelector = new CameraSelector.Builder()
-                            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                            .build();
+                            CameraSelector cameraSelector = new CameraSelector.Builder()
+                                    .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                                    .build();
 
-                        // Unbind use cases before rebinding
-                        cameraProvider.unbindAll();
+                            // Unbind use cases before rebinding
+                            cameraProvider.unbindAll();
 
-                        // Bind use cases to camera
-                        cameraProvider.bindToLifecycle(
-                            MainActivity.this, cameraSelector, preview, imageCapture);
+                            // Bind use cases to camera
+                            cameraProvider.bindToLifecycle(
+                                    MainActivity.this, cameraSelector, preview, imageCapture);
 
 
-                    } catch (Exception e) {
-                        Log.e(TAG, "Use case binding failed", e);
+                        } catch (Exception e) {
+                            Log.e(TAG, "Use case binding failed", e);
+                        }
                     }
-                }
-            }, ContextCompat.getMainExecutor(this)
+                }, ContextCompat.getMainExecutor(this)
         );
     }
 
@@ -132,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
         if (imageCapture == null) return;
 
         File photoFile = new File(getOutputDirectory(),
-            (new SimpleDateFormat(FILENAME_FORMAT, Locale.US)).format(System.currentTimeMillis()) + ".jpg");
+                (new SimpleDateFormat(FILENAME_FORMAT, Locale.US)).format(System.currentTimeMillis()) + ".jpg");
         ImageCapture.OutputFileOptions outputOptions = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
 
 

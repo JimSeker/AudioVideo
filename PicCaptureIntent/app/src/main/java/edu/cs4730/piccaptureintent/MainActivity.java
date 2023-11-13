@@ -31,9 +31,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import edu.cs4730.piccaptureintent.databinding.ActivityMainBinding;
+
 public class MainActivity extends AppCompatActivity {
 
-    ImageView iv;
+    ActivityMainBinding binding;
+
     //needed for when we spec the file, , but why?? inconsistent with video.
     String imagefile;
     Uri mediaURI;
@@ -43,10 +46,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        //place picture here
-        iv = findViewById(R.id.imageView);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         ActivityResultNoPic = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
             @Override
@@ -68,8 +69,8 @@ public class MainActivity extends AppCompatActivity {
                         }
 
                         //Note the picture is not stored on the filesystem, so this is the only "copy" of the picture.
-                        iv.setImageBitmap(bp);
-                        iv.invalidate();  //likely not needed, but just in case this will cause the imageview to redraw.
+                        binding.imageView.setImageBitmap(bp);
+                        binding.imageView.invalidate();  //likely not needed, but just in case this will cause the imageview to redraw.
                     } else {
                         Toast.makeText(getApplicationContext(), "No picture was returned", Toast.LENGTH_SHORT).show();
                     }
@@ -80,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.buttonnofile).setOnClickListener(new View.OnClickListener() {
+        binding.buttonnofile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //create an intent to have the default camera app take a picture and return the picture, but no file.
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
                 if (result.getResultCode() == Activity.RESULT_OK) {
                     //Intent data = result.getData();  //since we provided a filename, it will come back null.  don't use.
                     // but with video, we do use it.  weird android... very weird and inconsistent.
-                    iv.setImageBitmap(loadAndRotateImage(imagefile));
+                    binding.imageView.setImageBitmap(loadAndRotateImage(imagefile));
                 } else {
                     Toast.makeText(getApplicationContext(), "Request was canceled.", Toast.LENGTH_SHORT).show();
                 }
@@ -105,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //take a picture and have it stored in our local space.  with need providers so the camera can access our space.
-        findViewById(R.id.buttonlocal).setOnClickListener(new View.OnClickListener() {
+        binding.buttonlocal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
@@ -142,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                         } else {
                             bitmap = BitmapFactory.decodeStream(getContentResolver().openInputStream(mediaURI));
                         }
-                        iv.setImageBitmap(bitmap);
+                        binding.imageView.setImageBitmap(bitmap);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -153,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.buttonsd).setOnClickListener(new View.OnClickListener() {
+        binding.buttonsd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());

@@ -16,7 +16,6 @@ import androidx.camera.video.Recorder;
 import androidx.camera.video.Recording;
 import androidx.camera.video.VideoCapture;
 import androidx.camera.video.VideoRecordEvent;
-import androidx.camera.view.PreviewView;
 import androidx.core.content.ContextCompat;
 import androidx.core.util.Consumer;
 
@@ -31,7 +30,6 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.common.util.concurrent.ListenableFuture;
@@ -41,6 +39,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import edu.cs4730.cameraxvideodemo.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,47 +52,47 @@ public class MainActivity extends AppCompatActivity {
 
     ActivityResultLauncher<String[]> rpl;
     private String[] REQUIRED_PERMISSIONS;
-    PreviewView viewFinder;
-    Button take_photo;
+    ActivityMainBinding binding;
     ExecutorService executor = Executors.newSingleThreadExecutor();
     Boolean recording = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        viewFinder = findViewById(R.id.viewFinder);
-        take_photo = findViewById(R.id.camera_capture_button);
-        take_photo.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                takeVideo();
-            }
-        });
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
         } else {
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO};
         }
-        rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
-            new ActivityResultCallback<Map<String, Boolean>>() {
-                @Override
-                public void onActivityResult(Map<String, Boolean> isGranted) {
-                    if (allPermissionsGranted()) {
-                        startCamera();
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
+        rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), new ActivityResultCallback<Map<String, Boolean>>() {
+            @Override
+            public void onActivityResult(Map<String, Boolean> isGranted) {
+                if (allPermissionsGranted()) {
+                    startCamera();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
+                    finish();
                 }
             }
-        );
+        });
+
+        binding.cameraCaptureButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                takeVideo();
+            }
+        });
+
         if (allPermissionsGranted()) {
             startCamera(); //start camera if permission has been granted by user
         } else {
             rpl.launch(REQUIRED_PERMISSIONS);
         }
+
+
     }
 
     @SuppressLint("RestrictedApi")
@@ -100,38 +100,31 @@ public class MainActivity extends AppCompatActivity {
 
         ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
 
+        cameraProviderFuture.addListener(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ProcessCameraProvider cameraProvider = (ProcessCameraProvider) cameraProviderFuture.get();
+                    Preview preview = (new Preview.Builder()).build();
+                    preview.setSurfaceProvider(binding.viewFinder.getSurfaceProvider());
 
-        cameraProviderFuture.addListener(
-            new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        ProcessCameraProvider cameraProvider = (ProcessCameraProvider) cameraProviderFuture.get();
-                        Preview preview = (new Preview.Builder()).build();
-                        preview.setSurfaceProvider(viewFinder.getSurfaceProvider());
+                    CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
 
-                        CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+                    Recorder recorder = new Recorder.Builder().setQualitySelector(QualitySelector.from(Quality.HIGHEST, FallbackStrategy.higherQualityOrLowerThan(Quality.SD))).build();
+                    videoCapture = VideoCapture.withOutput(recorder);
+                    ImageCapture imageCatpure = new ImageCapture.Builder().build();
+                    // Unbind use cases before rebinding
+                    cameraProvider.unbindAll();
 
-                        Recorder recorder = new Recorder.Builder()
-                            .setQualitySelector(QualitySelector.from(Quality.HIGHEST,
-                                FallbackStrategy.higherQualityOrLowerThan(Quality.SD)))
-                            .build();
-                        videoCapture = VideoCapture.withOutput(recorder);
-                        ImageCapture imageCatpure = new ImageCapture.Builder().build();
-                        // Unbind use cases before rebinding
-                        cameraProvider.unbindAll();
-
-                        // Bind use cases to camera
-                        cameraProvider.bindToLifecycle(
-                            MainActivity.this, cameraSelector, preview, imageCatpure, videoCapture);
+                    // Bind use cases to camera
+                    cameraProvider.bindToLifecycle(MainActivity.this, cameraSelector, preview, imageCatpure, videoCapture);
 
 
-                    } catch (Exception e) {
-                        Log.e(TAG, "Use case binding failed", e);
-                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Use case binding failed", e);
                 }
-            }, ContextCompat.getMainExecutor(this)
-        );
+            }
+        }, ContextCompat.getMainExecutor(this));
     }
 
 
@@ -144,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
         if (recording) {  //ie already started.
             currentRecording.stop();
             recording = false;
-            take_photo.setText("Start Rec");
+            binding.cameraCaptureButton.setText("Start Rec");
         } else {
             String name = "CameraX-" + (new SimpleDateFormat(FILENAME_FORMAT, Locale.US)).format(System.currentTimeMillis()) + ".mp4";
             ContentValues cv = new ContentValues();
@@ -154,44 +147,37 @@ public class MainActivity extends AppCompatActivity {
                 cv.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/CameraX-Video");
             }
 
-            MediaStoreOutputOptions mediaStoreOutputOptions = new MediaStoreOutputOptions.Builder(
-                getContentResolver(),
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-                .setContentValues(cv)
-                .build();
+            MediaStoreOutputOptions mediaStoreOutputOptions = new MediaStoreOutputOptions.Builder(getContentResolver(), MediaStore.Video.Media.EXTERNAL_CONTENT_URI).setContentValues(cv).build();
 
-            currentRecording = ((Recorder) videoCapture.getOutput())
-                .prepareRecording(MainActivity.this, mediaStoreOutputOptions)
-                .withAudioEnabled()
-                .start(executor, new Consumer<VideoRecordEvent>() {
-                    @Override
-                    public void accept(VideoRecordEvent videoRecordEvent) {
-                        if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
-                            Uri savedUri = ((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri();
-                            //convert uri to useful name.
-                            Cursor cursor = null;
-                            String path = "";
-                            try {
-                                cursor = getContentResolver().query(savedUri, new String[]{MediaStore.MediaColumns.DATA}, null, null, null);
-                                cursor.moveToFirst();
-                                path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
-                            } finally {
-                                cursor.close();
-                            }
-                            Log.wtf(TAG, path);
-                            if (path.equals("")) {
-                                path = savedUri.toString();
-                            }
-                            String msg = "Video capture succeeded: " + path;
-                            runOnUiThread(() -> Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show());
-                            Log.d(TAG, msg);
-                            currentRecording = null;
+            currentRecording = ((Recorder) videoCapture.getOutput()).prepareRecording(MainActivity.this, mediaStoreOutputOptions).withAudioEnabled().start(executor, new Consumer<VideoRecordEvent>() {
+                @Override
+                public void accept(VideoRecordEvent videoRecordEvent) {
+                    if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
+                        Uri savedUri = ((VideoRecordEvent.Finalize) videoRecordEvent).getOutputResults().getOutputUri();
+                        //convert uri to useful name.
+                        Cursor cursor = null;
+                        String path = "";
+                        try {
+                            cursor = getContentResolver().query(savedUri, new String[]{MediaStore.MediaColumns.DATA}, null, null, null);
+                            cursor.moveToFirst();
+                            path = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA));
+                        } finally {
+                            cursor.close();
                         }
+                        Log.wtf(TAG, path);
+                        if (path.equals("")) {
+                            path = savedUri.toString();
+                        }
+                        String msg = "Video capture succeeded: " + path;
+                        runOnUiThread(() -> Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show());
+                        Log.d(TAG, msg);
+                        currentRecording = null;
                     }
-                });
+                }
+            });
 
             recording = true;
-            take_photo.setText("Stop Rec");
+            binding.cameraCaptureButton.setText("Stop Rec");
         }
 
     }

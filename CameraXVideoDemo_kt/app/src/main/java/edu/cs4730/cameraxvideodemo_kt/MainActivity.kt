@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
-import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,8 +19,8 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.*
 import androidx.camera.video.VideoRecordEvent.Finalize
-import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import edu.cs4730.cameraxvideodemo_kt.databinding.ActivityMainBinding
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -35,14 +34,15 @@ class MainActivity : AppCompatActivity() {
     private var videoCapture: VideoCapture<Recorder>? = null
     private var currentRecording: Recording? = null
     lateinit var rpl: ActivityResultLauncher<Array<String>>
-    private lateinit var cameraExecutor: ExecutorService
+    private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     var recording: Boolean = false
-    lateinit var camera_capture_button : Button
-    lateinit var viewFinder: PreviewView
+    lateinit var binding: ActivityMainBinding
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         REQUIRED_PERMISSIONS =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
@@ -68,6 +68,10 @@ class MainActivity : AppCompatActivity() {
                 finish()
             }
         }
+
+        // Set up the listener for take photo button
+        binding.cameraCaptureButton.setOnClickListener { takeVideo() }
+
         // Request camera permissions
         if (allPermissionsGranted()) {
             startCamera()
@@ -75,12 +79,7 @@ class MainActivity : AppCompatActivity() {
             rpl.launch(REQUIRED_PERMISSIONS)
         }
 
-        viewFinder = findViewById(R.id.viewFinder)
-        // Set up the listener for take photo button
-        camera_capture_button = findViewById(R.id.camera_capture_button)
-        camera_capture_button.setOnClickListener { takeVideo() }
 
-        cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
     @SuppressLint("RestrictedApi", "MissingPermission")
@@ -93,7 +92,7 @@ class MainActivity : AppCompatActivity() {
             //ie already started.
             currentRecording?.stop()
             recording = false
-            camera_capture_button.text = "Start Rec"
+            binding.cameraCaptureButton.text = "Start Rec"
         } else {
 
             val name = "CameraX-" + SimpleDateFormat(FILENAME_FORMAT, Locale.US)
@@ -154,7 +153,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
             recording = true
-            camera_capture_button.text = "Stop Rec"
+            binding.cameraCaptureButton.text = "Stop Rec"
         }
     }
 
@@ -167,7 +166,7 @@ class MainActivity : AppCompatActivity() {
                 try {
                     val cameraProvider = cameraProviderFuture.get() as ProcessCameraProvider
                     val preview = Preview.Builder().build()
-                    preview.setSurfaceProvider(viewFinder.surfaceProvider)
+                    preview.setSurfaceProvider(binding.viewFinder.surfaceProvider)
                     val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
                     val recorder = Recorder.Builder()
                         .setQualitySelector(

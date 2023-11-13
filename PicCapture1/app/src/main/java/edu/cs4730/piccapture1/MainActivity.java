@@ -35,7 +35,6 @@ import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Toast;
 
@@ -50,6 +49,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import edu.cs4730.piccapture1.databinding.ActivityMainBinding;
 
 /**
  * using the camera2 (api 21+) methods to capture a picture and store in either the sdcard or local to the app.
@@ -67,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     static int MEDIA_TYPE_VIDEO = 2;
     static int MEDIA_TYPE_AUDIO = 3;
 
-    SurfaceView cameraView;
+    ActivityMainBinding binding;
     SurfaceHolder surfaceHolder;
     String TAG = "MainActivity";
 
@@ -90,34 +91,33 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {  //For API 33+
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {  //For API 33+
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES};
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q) to 32,
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
         } else { // for 26 to 28.
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         }
-        rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
-            new ActivityResultCallback<Map<String, Boolean>>() {
-                @Override
-                public void onActivityResult(Map<String, Boolean> isGranted) {
-                    if (allPermissionsGranted()) {
-                        openCamera(); //start camera if permission has been granted by user
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
-                        finish();
-                    }
+        rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), new ActivityResultCallback<Map<String, Boolean>>() {
+            @Override
+            public void onActivityResult(Map<String, Boolean> isGranted) {
+                if (allPermissionsGranted()) {
+                    openCamera(); //start camera if permission has been granted by user
+                } else {
+                    Toast.makeText(getApplicationContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
+                    finish();
                 }
             }
-        );
-        cameraView = findViewById(R.id.CameraView2);
+        });
+
         //setup the preview for the camera.
-        surfaceHolder = cameraView.getHolder();
+        surfaceHolder = binding.CameraView2.getHolder();
         surfaceHolder.addCallback(this);
 
-        findViewById(R.id.buttonlocal).setOnClickListener(new View.OnClickListener() {
+        binding.buttonlocal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //create a file in the local app pictures directory.
@@ -131,7 +131,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         });
 
 
-        findViewById(R.id.buttonsd).setOnClickListener(new View.OnClickListener() {
+        binding.buttonsd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 //this get a unique file name with .jpg in the media pictures directory.
@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     private CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
 
         @Override
-        public void onOpened(CameraDevice camera) {
+        public void onOpened(@NonNull CameraDevice camera) {
 
             Log.e(TAG, "onOpened");
             mCameraDevice = camera;
@@ -216,13 +216,13 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         }
 
         @Override
-        public void onDisconnected(CameraDevice camera) {
+        public void onDisconnected(@NonNull CameraDevice camera) {
 
             Log.e(TAG, "onDisconnected");
         }
 
         @Override
-        public void onError(CameraDevice camera, int error) {
+        public void onError(@NonNull CameraDevice camera, int error) {
 
             Log.e(TAG, "onError");
         }
@@ -271,14 +271,14 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             mCameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback() {
 
                 @Override
-                public void onConfigured(CameraCaptureSession session) {
+                public void onConfigured(@NonNull CameraCaptureSession session) {
 
                     mPreviewSession = session;
                     updatePreview();
                 }
 
                 @Override
-                public void onConfigureFailed(CameraCaptureSession session) {
+                public void onConfigureFailed(@NonNull CameraCaptureSession session) {
 
                     Toast.makeText(getApplicationContext(), "onConfigureFailed", Toast.LENGTH_LONG).show();
                 }
@@ -315,31 +315,19 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         @Override
         public void onImageAvailable(ImageReader reader) {
 
-            Image image = null;
-            try {
-                image = reader.acquireLatestImage();
+            try (Image image = reader.acquireLatestImage()) {
                 ByteBuffer buffer = image.getPlanes()[0].getBuffer();
                 byte[] bytes = new byte[buffer.capacity()];
                 buffer.get(bytes);
                 save(bytes);
             } catch (IOException e) {
                 e.printStackTrace();
-            } finally {
-                if (image != null) {
-                    image.close();
-                }
             }
         }
 
         private void save(byte[] bytes) throws IOException {
-            OutputStream output = null;
-            try {
-                output = getContentResolver().openOutputStream(imageFileUri);
+            try (OutputStream output = getContentResolver().openOutputStream(imageFileUri)) {
                 output.write(bytes);
-            } finally {
-                if (null != output) {
-                    output.close();
-                }
             }
         }
 
@@ -348,8 +336,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     CameraCaptureSession.CaptureCallback captureListener = new CameraCaptureSession.CaptureCallback() {
 
         @Override
-        public void onCaptureCompleted(CameraCaptureSession session,
-                                       CaptureRequest request, TotalCaptureResult result) {
+        public void onCaptureCompleted(@NonNull CameraCaptureSession session, @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
 
             super.onCaptureCompleted(session, request, result);
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
@@ -389,7 +376,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         }
 
         @Override
-        public void onConfigureFailed(CameraCaptureSession session) {
+        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
             Log.v(TAG, "OnConfigureFailed");
         }
     };

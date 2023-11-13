@@ -18,6 +18,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
+import edu.cs4730.cameraxdemo_kt.databinding.ActivityMainBinding
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -34,12 +35,12 @@ class MainActivity : AppCompatActivity() {
     lateinit var rpl: ActivityResultLauncher<Array<String>>
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
-    lateinit var camera_capture_button : Button
-    lateinit var viewFinder: PreviewView
+    lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         rpl = registerForActivityResult(RequestMultiplePermissions()
         ) {
             if (allPermissionsGranted()) {
@@ -60,10 +61,9 @@ class MainActivity : AppCompatActivity() {
             rpl.launch(REQUIRED_PERMISSIONS)
         }
 
-        viewFinder = findViewById(R.id.viewFinder)
         // Set up the listener for take photo button
-        camera_capture_button = findViewById(R.id.camera_capture_button)
-        camera_capture_button.setOnClickListener { takePhoto() }
+
+        binding.cameraCaptureButton.setOnClickListener { takePhoto() }
 
         outputDirectory = getOutputDirectory()
 
@@ -118,7 +118,7 @@ class MainActivity : AppCompatActivity() {
             val preview = Preview.Builder()
                 .build()
                 .also {
-                    it.setSurfaceProvider(viewFinder.surfaceProvider)
+                    it.setSurfaceProvider(binding.viewFinder.surfaceProvider)
                 }
             imageCapture = ImageCapture.Builder()
                 .build()
