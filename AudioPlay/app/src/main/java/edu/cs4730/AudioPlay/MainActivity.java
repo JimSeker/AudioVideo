@@ -11,6 +11,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentActivity;
 
+import edu.cs4730.AudioPlay.databinding.ActivityMainBinding;
+
 /**
  * A simple app to demo how to play/pause/restart playing an audio
  * file from different places.
@@ -24,37 +26,37 @@ public class MainActivity extends AppCompatActivity {
     MediaPlayer mediaPlayer;
     int playbackPosition = 0;
     boolean localfile = false;
-    TextView logger;
     static final String TAG = "MainActivity";
+    ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        logger = findViewById(R.id.logger);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        findViewById(R.id.btnPlayLocal).setOnClickListener(new View.OnClickListener() {
+        binding.btnPlayLocal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 playAudioResource();
             }
         });
         // play button, using remote file.
-        findViewById(R.id.btnPlay).setOnClickListener(new View.OnClickListener() {
+        binding.btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 playAudio(AUDIO_PATH);
             }
         });
         //pause the audio.
-        findViewById(R.id.btnPause).setOnClickListener(new View.OnClickListener() {
+        binding.btnPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 pauseAudio();
             }
         });
         //restart the audio.
-        findViewById(R.id.btnRestart).setOnClickListener(new View.OnClickListener() {
+        binding.btnRestart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 restartAudio();
@@ -84,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
             mediaPlayer.seekTo(0);
         }
         if (mediaPlayer.isPlaying()) {  //duh don't start it again.
-           logthis("I'm playing already");
+            logthis("I'm playing already");
             return;
         }
         //finally play!
@@ -108,7 +110,7 @@ public class MainActivity extends AppCompatActivity {
                 return;
             }
         } else if (mediaPlayer.isPlaying()) {  //duh don't start it again.
-            logthis( "I'm playing already");
+            logthis("I'm playing already");
             return;
         } else {  //play it at least one, reset and play again.
             mediaPlayer.seekTo(0);
@@ -134,8 +136,7 @@ public class MainActivity extends AppCompatActivity {
      * make sure the player has been released.
      */
     void KillMediaPlayer() {
-        if (mediaPlayer != null)
-            mediaPlayer.release();
+        if (mediaPlayer != null) mediaPlayer.release();
         mediaPlayer = null;
     }
 
@@ -156,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
 
     //A simple method to append data to the logger textview.
     public void logthis(String msg) {
-        logger.append(msg + "\n");
+        binding.logger.append(msg + "\n");
         Log.d(TAG, msg);
     }
 
