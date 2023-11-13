@@ -35,6 +35,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -46,6 +47,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+
+import edu.cs4730.videocapture1.databinding.ActivityMainBinding;
 
 /**
  * This shows how to setup and record a video, while storing in the sdcard (easily switched to local)
@@ -69,9 +72,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     static int MEDIA_TYPE_VIDEO = 2;
     static int MEDIA_TYPE_AUDIO = 3;
 
-    SurfaceView preview;
+    ActivityMainBinding binding;
     public SurfaceHolder mHolder;
-    Button btn_takevideo;
 
     String cameraId;
     public CameraDevice mCameraDevice;
@@ -89,7 +91,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { //api 33+
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_MEDIA_LOCATION, Manifest.permission.READ_MEDIA_VIDEO};
         } else  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q),
@@ -97,10 +101,10 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         } else {  //for 26 to 28.
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         }
-        preview = findViewById(R.id.camera2_preview);
+
         // Install a SurfaceHolder.Callback so we get notified when the
         // underlying surface is created and destroyed.
-        mHolder = preview.getHolder();
+        mHolder = binding.camera2Preview.getHolder();
         mHolder.addCallback(this);
 
         //Use this to check permissions.
@@ -118,19 +122,19 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             }
         );
 
-        btn_takevideo = findViewById(R.id.btn_takevideo);
-        btn_takevideo.setOnClickListener(
+
+        binding.btnTakevideo.setOnClickListener(
             new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (!mIsRecordingVideo) {  //about to take a video
                         mIsRecordingVideo = true;
-                        btn_takevideo.setText("Stop Recording");
+                        binding.btnTakevideo.setText("Stop Recording");
                         startRecordingVideo();
                     } else {
                         stopRecordingVideo();
                         mIsRecordingVideo = false;
-                        btn_takevideo.setText("Start Recording");
+                        binding.btnTakevideo.setText("Start Recording");
                     }
                 }
             }
@@ -231,19 +235,19 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
      */
     private CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
         @Override
-        public void onOpened(CameraDevice camera) {
+        public void onOpened(@NonNull CameraDevice camera) {
             Log.d(TAG, "onOpened");
             mCameraDevice = camera;
             setup2Record();
         }
 
         @Override
-        public void onDisconnected(CameraDevice camera) {
+        public void onDisconnected(@NonNull CameraDevice camera) {
             Log.d(TAG, "onDisconnected");
         }
 
         @Override
-        public void onError(CameraDevice camera, int error) {
+        public void onError(@NonNull CameraDevice camera, int error) {
             Log.d(TAG, "onError from mStateCallback from opencamera listener.");
         }
     };
@@ -360,7 +364,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         }
 
         @Override
-        public void onConfigureFailed(CameraCaptureSession session) {
+        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
             Log.e(TAG, "onConfigureFailed");
         }
     };
@@ -390,18 +394,18 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
      */
 
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
+    public void surfaceCreated(@NonNull SurfaceHolder holder) {
         Log.d(TAG, "Surfaceview Created");
         openCamera();
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+    public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
         Log.d(TAG, "Surfaceview Changed");
     }
 
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
+    public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
         Log.d(TAG, "Surfaceview Destroyed");
         if (mCameraDevice != null) {
             mCameraDevice.close();

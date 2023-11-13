@@ -16,15 +16,15 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.MediaController;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import edu.cs4730.videocaptureintent.databinding.ActivityMainBinding;
 
 
 /**
@@ -40,16 +40,17 @@ import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity {
 
-    VideoView mVideoView;
+    ActivityMainBinding binding;
     ActivityResultLauncher<Intent> ActivityResultAll;
     String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        mVideoView = findViewById(R.id.videoView);
-        mVideoView.setMediaController(new MediaController(this));
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        binding.videoView.setMediaController(new MediaController(this));
 
         //only need one result return, since the file and path is return with the data.
         ActivityResultAll = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
@@ -60,21 +61,20 @@ public class MainActivity extends AppCompatActivity {
                     if (data != null) {
                         Uri videoUri = data.getData();
                         Log.v("return", "Video saved to: " + data.getData());
-                        mVideoView.setVideoURI(videoUri);
-                        mVideoView.start();
+                        binding.videoView.setVideoURI(videoUri);
+                        binding.videoView.start();
                     } else {
-                        Toast.makeText(getApplicationContext(), "No Data returned?!.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(MainActivity.this, "No Data returned?!.", Toast.LENGTH_SHORT).show();
                     }
 
                 } else {
-                    Toast.makeText(getApplicationContext(), "Request was canceled.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Request was canceled.", Toast.LENGTH_SHORT).show();
                 }
             }
         });
 
         //Setup video no no parameters, should go into the camera directory, I think.
-        Button btnany = findViewById(R.id.buttonany);
-        btnany.setOnClickListener(new View.OnClickListener() {
+        binding.buttonany.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //create an intent to have the default video record take a video.
@@ -85,15 +85,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //Setup to start the video in our local directories, /video I hope.
-        findViewById(R.id.buttonlocal).setOnClickListener(new View.OnClickListener() {
+        binding.buttonlocal.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
                 File storageDir = getExternalFilesDir(Environment.DIRECTORY_MOVIES);
                 File mediaFile = new File(storageDir.getPath() + File.separator + "VID_" + timeStamp + ".mp4");
-                Uri videoURI = FileProvider.getUriForFile(getApplicationContext(),
-                    "edu.cs4730.videocaptureintent.fileprovider",
-                    mediaFile);
+                Uri videoURI = FileProvider.getUriForFile(getApplicationContext(), "edu.cs4730.videocaptureintent.fileprovider", mediaFile);
 
                 //so I can print out the location, otherwise, these 2 lines are not needed.
                 String imagefile = mediaFile.getAbsolutePath();
@@ -106,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //Setup to start the video in our local directories, /video I hope.
-        findViewById(R.id.buttonsd).setOnClickListener(new View.OnClickListener() {
+        binding.buttonsd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
