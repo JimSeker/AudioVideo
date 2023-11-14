@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import java.util.Map;
 
@@ -19,23 +18,27 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import edu.cs4730.videocapture2.databinding.FragmentHomeBinding;
+
 
 public class HomeFragment extends Fragment {
     private final static String TAG = "HelpFragment";
-    TextView logger;
+   FragmentHomeBinding binding;
     private String[] REQUIRED_PERMISSIONS;
     ActivityResultLauncher<String[]> rpl;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View myView = inflater.inflate(R.layout.fragment_home, container, false);
-        logger = myView.findViewById(R.id.loggerh);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
+        binding = FragmentHomeBinding.inflate(inflater, container, false);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { //api 33+
+            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_MEDIA_LOCATION, Manifest.permission.READ_MEDIA_VIDEO};
+        } else  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q),
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_MEDIA_LOCATION};
-        } else {
+        } else {  //for 26 to 28.
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         }
 
-        myView.findViewById(R.id.btn_perm).setOnClickListener(new View.OnClickListener() {
+       binding.btnPerm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 rpl.launch(REQUIRED_PERMISSIONS);
@@ -58,7 +61,7 @@ public class HomeFragment extends Fragment {
         else
             logthis("All permissions have been granted already.");
 
-        return myView;
+        return binding.getRoot();
     }
 
     private boolean allPermissionsGranted() {
@@ -71,7 +74,7 @@ public class HomeFragment extends Fragment {
     }
 
     public void logthis(String msg) {
-        logger.append(msg + "\n");
+        binding.loggerh.append(msg + "\n");
         Log.d(TAG, msg);
     }
 }

@@ -1,5 +1,6 @@
 package edu.cs4730.videocapture2;
 
+
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
@@ -9,50 +10,47 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.MediaController;
-import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.VideoView;
 
-import java.io.File;
 import java.util.List;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import edu.cs4730.videocapture2.databinding.FragmentPlayBinding;
+
+/**
+ * This fragment uses the viewmodel to determine which videos exist and play them.
+ */
 public class PlayFragment extends Fragment {
 
     private videoViewModel myViewModel;
     ArrayAdapter<String> adapter;
-    Spinner mySpinner;
-    VideoView vv;
-    Context myContext;
+    FragmentPlayBinding binding;
     List<String> mfiles;
+    Context myContext;
 
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         myViewModel = new ViewModelProvider(requireActivity()).get(videoViewModel.class);
+        binding = FragmentPlayBinding.inflate(inflater, container, false);
 
-        final View myView = inflater.inflate(R.layout.fragment_play, container, false);
+        //needed for adapter, since observer will be called when requirecontext may not work.
+        myContext = requireContext();
 
-        vv = myView.findViewById(R.id.videoView);
-        vv.setMediaController(new MediaController(requireActivity()));
-        myContext = getContext();
-        mySpinner = myView.findViewById(R.id.spinner);
-        mySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        binding.videoView.setMediaController(new MediaController(requireActivity()));
+
+        binding.spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
-                Uri videoUri = Uri.parse( mfiles.get(position));
-                vv.setVideoURI(videoUri);
-                vv.start();
+                Uri videoUri = Uri.parse(mfiles.get(position));
+                binding.videoView.setVideoURI(videoUri);
+                binding.videoView.start();
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                vv.stopPlayback();
+                binding.videoView.stopPlayback();
             }
         });
 
@@ -63,10 +61,10 @@ public class PlayFragment extends Fragment {
                 adapter = new ArrayAdapter<String>(myContext, android.R.layout.simple_spinner_item, files);
                 //set the dropdown layout
                 adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                mySpinner.setAdapter(adapter);
+                binding.spinner.setAdapter(adapter);
             }
 
         });
-        return myView;
+        return binding.getRoot();
     }
 }

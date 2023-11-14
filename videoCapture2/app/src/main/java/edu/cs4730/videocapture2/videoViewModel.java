@@ -15,7 +15,6 @@ public class videoViewModel extends ViewModel {
     public videoViewModel() {
         mylist = new ArrayList<String>();
         Files = new MutableLiveData<>(mylist);
-
     }
 
     public void add(String item) {

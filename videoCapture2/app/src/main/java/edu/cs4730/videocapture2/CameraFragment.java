@@ -45,19 +45,18 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import edu.cs4730.videocapture2.databinding.FragmentCameraBinding;
+
 /**
  * Note, this uses camera2, not androidx.CameraX or the older camera v1.
  */
 public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
     String TAG = "CameraFragment";
-    SurfaceView preview;
+    FragmentCameraBinding binding;
     public SurfaceHolder mHolder;
-    Button btn_takevideo;
-    Context context;
     //used for the camera
     String cameraId;
     public CameraDevice mCameraDevice;
-
     boolean mIsRecordingVideo = false;
     private Size mVideoSize;
     CaptureRequest.Builder captureBuilder;
@@ -70,35 +69,30 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
     CameraCaptureSession mSession;
     private videoViewModel myViewModel;
 
-    public View onCreateView(@NonNull LayoutInflater inflater,
-                             ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         myViewModel = new ViewModelProvider(requireActivity()).get(videoViewModel.class);
-        View myView = inflater.inflate(R.layout.fragment_camera, container, false);
-        context = getContext();
-        preview = myView.findViewById(R.id.camera2_preview);
+        binding = FragmentCameraBinding.inflate(inflater, container, false);
+
         // Install a SurfaceHolder.Callback so we get notified when the
         // underlying surface is created and destroyed.
-        mHolder = preview.getHolder();
+        mHolder = binding.camera2Preview.getHolder();
         mHolder.addCallback(this);
 
-        btn_takevideo = myView.findViewById(R.id.btn_takevideo);
-        btn_takevideo.setOnClickListener(
-            new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (!mIsRecordingVideo) {  //about to take a video
-                        mIsRecordingVideo = true;
-                        btn_takevideo.setText("Stop Recording");
-                        startRecordingVideo();
-                    } else {
-                        stopRecordingVideo();
-                        mIsRecordingVideo = false;
-                        btn_takevideo.setText("Start Recording");
-                    }
+        binding.btnTakevideo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!mIsRecordingVideo) {  //about to take a video
+                    mIsRecordingVideo = true;
+                    binding.btnTakevideo.setText("Stop Recording");
+                    startRecordingVideo();
+                } else {
+                    stopRecordingVideo();
+                    mIsRecordingVideo = false;
+                    binding.btnTakevideo.setText("Start Recording");
                 }
             }
-        );
-        return myView;
+        });
+        return binding.getRoot();
     }
 
     //start recording
@@ -107,7 +101,7 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
     }
 
     @Override
-    public void onPause()  {
+    public void onPause() {
         if (mIsRecordingVideo) {
             stopRecordingVideo();
             mIsRecordingVideo = false;
@@ -137,7 +131,7 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
         } else { //local
             file = mFileUri.toString();
         }
-        Toast.makeText(context, "Video saved: " + file, Toast.LENGTH_SHORT).show();
+        Toast.makeText(requireContext(), "Video saved: " + file, Toast.LENGTH_SHORT).show();
         myViewModel.add(file);
         Log.v(TAG, "Video saved: " + file);
 
@@ -148,18 +142,18 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
 
 
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
+    public void surfaceCreated(@NonNull SurfaceHolder holder) {
         Log.d(TAG, "Surfaceview Created");
         openCamera();
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+    public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
         Log.d(TAG, "Surfaceview Changed");
     }
 
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
+    public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
         Log.d(TAG, "Surfaceview Destroyed");
         if (mCameraDevice != null) {
             mCameraDevice.close();
@@ -170,7 +164,7 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
     //setup the camera objects
     private void openCamera() {
 
-        CameraManager manager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+        CameraManager manager = (CameraManager) requireContext().getSystemService(Context.CAMERA_SERVICE);
 
         Log.d(TAG, "openCamera Start");
         if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
@@ -196,20 +190,20 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
     private CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
 
         @Override
-        public void onOpened(CameraDevice camera) {
+        public void onOpened(@NonNull CameraDevice camera) {
             Log.d(TAG, "onOpened");
             mCameraDevice = camera;
             setup2Record();
         }
 
         @Override
-        public void onDisconnected(CameraDevice camera) {
+        public void onDisconnected(@NonNull CameraDevice camera) {
 
             Log.d(TAG, "onDisconnected");
         }
 
         @Override
-        public void onError(CameraDevice camera, int error) {
+        public void onError(@NonNull CameraDevice camera, int error) {
 
             Log.d(TAG, "onError from mStateCallback from opencamera listener.");
         }
@@ -228,14 +222,11 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
         }
 
         mMediaRecorder = new MediaRecorder();
-
-
-        CameraManager manager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
+        CameraManager manager = (CameraManager) requireContext().getSystemService(Context.CAMERA_SERVICE);
         //setup for video recording.
         try {
             characteristics = manager.getCameraCharacteristics(cameraId);
-            StreamConfigurationMap map = characteristics
-                .get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
+            StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             mVideoSize = chooseVideoSize(map.getOutputSizes(MediaRecorder.class));
 
             try {
@@ -309,7 +300,7 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
         mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 
-        int deviceorientation = context.getResources().getConfiguration().orientation;
+        int deviceorientation = requireContext().getResources().getConfiguration().orientation;
         mMediaRecorder.setOrientationHint(getJpegOrientation(characteristics, deviceorientation));
         mMediaRecorder.prepare();
     }
