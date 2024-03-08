@@ -3,17 +3,18 @@ package edu.cs4730.qrDemo;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 /**
- * Most of the code is in the MainFragment.  The activity has the 
+ * Most of the code is in the MainFragment.  The activity has the
  * onActivityResult() method here, to get the information on the return from scanning a QR code.
- *
- * 	https://github.com/srowen/zxing-bsplus which is archived, so barcode scanner+ may disappear at some point too.
- *
- * 	Note the android zxing is in maintence mode only.  all the qr codes can be handled via the
- * 	mlkit/vision libraries now.  So while this code still works (Nov 17, 2022 in api 33), it will likely fail
- * 	sometime soon.
+ * <p>
+ * https://github.com/srowen/zxing-bsplus which is archived, so barcode scanner+ may disappear at some point too.
+ * <p>
+ * Note the android zxing is in maintenance mode only.  all the qr codes can be handled via the
+ * mlkit/vision libraries now.  So while this code still works (March 8, 2024 in api 34), it will likely fail
+ * sometime soon.
  */
 
 public class MainActivity extends AppCompatActivity {
