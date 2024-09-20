@@ -4,24 +4,22 @@ import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.FragmentActivity;
 
 import edu.cs4730.AudioPlay.databinding.ActivityMainBinding;
 
 /**
  * A simple app to demo how to play/pause/restart playing an audio
  * file from different places.
+ * note cleartext is turned on in the manifest files.
  */
 
 public class MainActivity extends AppCompatActivity {
 
     static final String AUDIO_PATH = "http://www.cs.uwyo.edu/~seker/courses/4730/example/MEEPMEEP.WAV";
-    //"http://java.sun.com/products/java-media/mma/media/test-wav.wav";  //doesn't exist anymore.
+    //https://www.kozco.com/tech/soundtests.html
+    //static final String AUDIO_PATH = "https://www.kozco.com/tech/piano2-CoolEdit.mp3";
     //"/sdcard/file.mp3"
     MediaPlayer mediaPlayer;
     int playbackPosition = 0;
