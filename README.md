@@ -9,7 +9,9 @@ Android Audio and video Examples
 
 **Audio Examples:**
 
-`AudioPlay` demos how to play a resource audio file and an audio file from any other location (ie filesystem, Internet, etc)
+`AudioPlay` (java) demos how to play a resource audio file and an audio file from any other location (ie filesystem, Internet, etc)
+
+`AudioPlay` (kotlin) demos how to play a resource audio file and an audio file from any other location (ie filesystem, Internet, etc)
 
 `AudioRecordTest` will record via the mic and then you can play it back.
 
