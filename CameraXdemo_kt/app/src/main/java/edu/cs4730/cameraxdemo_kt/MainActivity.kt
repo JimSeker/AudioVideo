@@ -6,7 +6,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions
@@ -16,7 +15,6 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import edu.cs4730.cameraxdemo_kt.databinding.ActivityMainBinding
 import java.io.File
@@ -32,7 +30,7 @@ import java.util.concurrent.Executors
 
 class MainActivity : AppCompatActivity() {
     private var imageCapture: ImageCapture? = null
-    lateinit var rpl: ActivityResultLauncher<Array<String>>
+    private lateinit var rpl: ActivityResultLauncher<Array<String>>
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
     lateinit var binding: ActivityMainBinding
@@ -41,6 +39,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         rpl = registerForActivityResult(RequestMultiplePermissions()
         ) {
             if (allPermissionsGranted()) {
@@ -167,10 +166,10 @@ class MainActivity : AppCompatActivity() {
         private const val TAG = "CameraXBasic"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
         private val REQUIRED_PERMISSIONS =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
+          //  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
                 arrayOf(Manifest.permission.CAMERA)
-            } else {
-                arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            }
+           // } else {
+             //   arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            //}
     }
 }

@@ -33,7 +33,7 @@ import java.util.concurrent.Executors
 class MainActivity : AppCompatActivity() {
     private var videoCapture: VideoCapture<Recorder>? = null
     private var currentRecording: Recording? = null
-    lateinit var rpl: ActivityResultLauncher<Array<String>>
+    private lateinit var rpl: ActivityResultLauncher<Array<String>>
     private var cameraExecutor: ExecutorService = Executors.newSingleThreadExecutor()
     var recording: Boolean = false
     lateinit var binding: ActivityMainBinding
@@ -45,15 +45,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         REQUIRED_PERMISSIONS =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
+            //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
                 arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
-            } else {
-                arrayOf(
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.RECORD_AUDIO
-                )
-            }
+//            } else {
+//                arrayOf(Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.RECORD_AUDIO )
+//            }
         rpl = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) {
@@ -61,9 +57,7 @@ class MainActivity : AppCompatActivity() {
                 startCamera()
             } else {
                 Toast.makeText(
-                    applicationContext,
-                    "Permissions not granted by the user.",
-                    Toast.LENGTH_SHORT
+                    applicationContext, "Permissions not granted by the user.", Toast.LENGTH_SHORT
                 ).show()
                 finish()
             }
@@ -95,62 +89,58 @@ class MainActivity : AppCompatActivity() {
             binding.cameraCaptureButton.text = "Start Rec"
         } else {
 
-            val name = "CameraX-" + SimpleDateFormat(FILENAME_FORMAT, Locale.US)
-                .format(System.currentTimeMillis()) + ".mp4"
+            val name = "CameraX-" + SimpleDateFormat(
+                FILENAME_FORMAT,
+                Locale.US
+            ).format(System.currentTimeMillis()) + ".mp4"
             val cv = ContentValues()
             cv.put(MediaStore.MediaColumns.DISPLAY_NAME, name)
             cv.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4")
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+            //if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
                 cv.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/CameraX-Video")
-            }
+            //}
 
             val mediaStoreOutputOptions = MediaStoreOutputOptions.Builder(
-                contentResolver,
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-            )
-                .setContentValues(cv)
-                .build()
-            currentRecording = videoCapture.output
-                .prepareRecording(this@MainActivity, mediaStoreOutputOptions)
-                .withAudioEnabled()
-                .start(
-                    cameraExecutor
-                ) { videoRecordEvent ->
-                    if (videoRecordEvent is Finalize) {
-                        val savedUri = videoRecordEvent.outputResults.outputUri
-                        //convert uri to useful name.
-                        var cursor: Cursor? = null
-                        var path: String
-                        try {
-                            cursor = contentResolver.query(
-                                savedUri,
-                                arrayOf(MediaStore.MediaColumns.DATA),
-                                null,
-                                null,
-                                null
-                            )
-                            cursor!!.moveToFirst()
-                            path =
-                                cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
-                        } finally {
-                            cursor!!.close()
+                contentResolver, MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+            ).setContentValues(cv).build()
+            currentRecording =
+                videoCapture.output.prepareRecording(this@MainActivity, mediaStoreOutputOptions)
+                    .withAudioEnabled().start(
+                        cameraExecutor
+                    ) { videoRecordEvent ->
+                        if (videoRecordEvent is Finalize) {
+                            val savedUri = videoRecordEvent.outputResults.outputUri
+                            //convert uri to useful name.
+                            var cursor: Cursor? = null
+                            var path: String
+                            try {
+                                cursor = contentResolver.query(
+                                    savedUri,
+                                    arrayOf(MediaStore.MediaColumns.DATA),
+                                    null,
+                                    null,
+                                    null
+                                )
+                                cursor!!.moveToFirst()
+                                path =
+                                    cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DATA))
+                            } finally {
+                                cursor!!.close()
+                            }
+                            Log.wtf(TAG, path)
+                            if (path == "") {
+                                path = savedUri.toString()
+                            }
+                            val msg = "Video capture succeeded: $path"
+                            runOnUiThread {
+                                Toast.makeText(
+                                    baseContext, msg, Toast.LENGTH_LONG
+                                ).show()
+                            }
+                            Log.d(TAG, msg)
+                            currentRecording = null
                         }
-                        Log.wtf(TAG, path)
-                        if (path == "") {
-                            path = savedUri.toString()
-                        }
-                        val msg = "Video capture succeeded: $path"
-                        runOnUiThread {
-                            Toast.makeText(
-                                baseContext,
-                                msg,
-                                Toast.LENGTH_LONG
-                            ).show()
-                        }
-                        Log.d(TAG, msg)
-                        currentRecording = null
                     }
-                }
 
             recording = true
             binding.cameraCaptureButton.text = "Stop Rec"
@@ -168,14 +158,12 @@ class MainActivity : AppCompatActivity() {
                     val preview = Preview.Builder().build()
                     preview.setSurfaceProvider(binding.viewFinder.surfaceProvider)
                     val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-                    val recorder = Recorder.Builder()
-                        .setQualitySelector(
+                    val recorder = Recorder.Builder().setQualitySelector(
                             QualitySelector.from(
                                 Quality.HIGHEST,
                                 FallbackStrategy.higherQualityOrLowerThan(Quality.SD)
                             )
-                        )
-                        .build()
+                        ).build()
                     videoCapture = VideoCapture.withOutput(recorder)
                     val imageCatpure = ImageCapture.Builder().build()
                     // Unbind use cases before rebinding

@@ -62,11 +62,11 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
-        } else {
-            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO};
-        }
+//        } else {
+//            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO};
+//        }
         rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), new ActivityResultCallback<Map<String, Boolean>>() {
             @Override
             public void onActivityResult(Map<String, Boolean> isGranted) {
@@ -143,9 +143,9 @@ public class MainActivity extends AppCompatActivity {
             ContentValues cv = new ContentValues();
             cv.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
             cv.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
+           // if (Build.VERSION.SDK_INT > Build.VERSION_CODES.P) {
                 cv.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/CameraX-Video");
-            }
+           // }
 
             MediaStoreOutputOptions mediaStoreOutputOptions = new MediaStoreOutputOptions.Builder(getContentResolver(), MediaStore.Video.Media.EXTERNAL_CONTENT_URI).setContentValues(cv).build();
 
@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
                             cursor.close();
                         }
                         Log.wtf(TAG, path);
-                        if (path.equals("")) {
+                        if (path.isEmpty()) {
                             path = savedUri.toString();
                         }
                         String msg = "Video capture succeeded: " + path;
