@@ -3,7 +3,10 @@ package edu.cs4730.audioplay_kt
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import edu.cs4730.audioplay_kt.databinding.ActivityMainBinding
 
 /**
@@ -16,7 +19,8 @@ class MainActivity : AppCompatActivity() {
 
     //private val AUDIO_PATH: String = "http://www.eecs.uwyo.edu/~seker/courses/4730/example/MEEPMEEP.WAV"
     //https://www.kozco.com/tech/soundtests.html
-    private val AUDIO_PATH: String ="https://www.kozco.com/tech/piano2-CoolEdit.mp3"
+    private val AUDIO_PATH: String = "https://www.kozco.com/tech/piano2-CoolEdit.mp3"
+
     //"/sdcard/file.mp3"
     private var mediaPlayer: MediaPlayer? = null
     private var playbackPosition: Int = 0
@@ -28,7 +32,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
+        ViewCompat.setOnApplyWindowInsetsListener(
+            findViewById(binding.main.id)
+        ) { v: View, insets: WindowInsetsCompat ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            insets
+        }
         binding.btnPlayLocal.setOnClickListener { playAudioResource() }
         // play button, using remote file.
         binding.btnPlay.setOnClickListener { playAudio(AUDIO_PATH) }
