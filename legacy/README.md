@@ -2,6 +2,7 @@ Android Audio and video Examples legacy/
 ===========
 
 These examples are no longer updated and should be concerned abandoned. 
+`AudioRecordTest` will record via the mic and then you can play it back.
 
 <b>camaera2te</b> unknown
 
