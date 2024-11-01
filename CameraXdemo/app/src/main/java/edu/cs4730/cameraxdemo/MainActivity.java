@@ -17,6 +17,9 @@ import androidx.core.view.WindowInsetsCompat;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -27,6 +30,7 @@ import android.widget.Toast;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Map;
@@ -64,22 +68,22 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q), for 26 to 28.
-            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
+        REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
         // } else {
         //    REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
         //}
         rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(),
-                new ActivityResultCallback<Map<String, Boolean>>() {
-                    @Override
-                    public void onActivityResult(Map<String, Boolean> isGranted) {
-                        if (allPermissionsGranted()) {
-                            startCamera();
-                        } else {
-                            Toast.makeText(getApplicationContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
-                            finish();
-                        }
+            new ActivityResultCallback<Map<String, Boolean>>() {
+                @Override
+                public void onActivityResult(Map<String, Boolean> isGranted) {
+                    if (allPermissionsGranted()) {
+                        startCamera();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Permissions not granted by the user.", Toast.LENGTH_SHORT).show();
+                        finish();
                     }
                 }
+            }
         );
 
 
@@ -103,35 +107,35 @@ public class MainActivity extends AppCompatActivity {
 
 
         cameraProviderFuture.addListener(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
-                            Preview preview = (new Preview.Builder()).build();
-                            preview.setSurfaceProvider(binding.viewFinder.getSurfaceProvider());
+            new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+                        Preview preview = (new Preview.Builder()).build();
+                        preview.setSurfaceProvider(binding.viewFinder.getSurfaceProvider());
 
-                            imageCapture = new ImageCapture.Builder()
-                                    .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
-                                    .build();
+                        imageCapture = new ImageCapture.Builder()
+                            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                            .build();
 
-                            CameraSelector cameraSelector = new CameraSelector.Builder()
-                                    .requireLensFacing(CameraSelector.LENS_FACING_BACK)
-                                    .build();
+                        CameraSelector cameraSelector = new CameraSelector.Builder()
+                            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+                            .build();
 
-                            // Unbind use cases before rebinding
-                            cameraProvider.unbindAll();
+                        // Unbind use cases before rebinding
+                        cameraProvider.unbindAll();
 
-                            // Bind use cases to camera
-                            cameraProvider.bindToLifecycle(
-                                    MainActivity.this, cameraSelector, preview, imageCapture);
+                        // Bind use cases to camera
+                        cameraProvider.bindToLifecycle(
+                            MainActivity.this, cameraSelector, preview, imageCapture);
 
 
-                        } catch (Exception e) {
-                            Log.e(TAG, "Use case binding failed", e);
-                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Use case binding failed", e);
                     }
-                }, ContextCompat.getMainExecutor(this)
+                }
+            }, ContextCompat.getMainExecutor(this)
         );
     }
 
@@ -140,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
         if (imageCapture == null) return;
 
         File photoFile = new File(getOutputDirectory(),
-                (new SimpleDateFormat(FILENAME_FORMAT, Locale.US)).format(System.currentTimeMillis()) + ".jpg");
+            (new SimpleDateFormat(FILENAME_FORMAT, Locale.US)).format(System.currentTimeMillis()) + ".jpg");
         ImageCapture.OutputFileOptions outputOptions = new ImageCapture.OutputFileOptions.Builder(photoFile).build();
 
 
@@ -149,7 +153,11 @@ public class MainActivity extends AppCompatActivity {
             public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
                 Uri savedUri = Uri.fromFile(photoFile);
                 String msg = "Photo capture succeeded: " + savedUri;
-                runOnUiThread(() -> Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show());
+                runOnUiThread(() -> {
+                    Toast.makeText(getBaseContext(), msg, Toast.LENGTH_LONG).show();
+                    DisplayPicFragment newDialog = DisplayPicFragment.newInstance(savedUri);
+                    newDialog.show(getSupportFragmentManager(), "displayPic");
+                });
                 Log.d(TAG, msg);
             }
 
@@ -183,5 +191,18 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         return true;
+    }
+
+    public Bitmap loadImage(Uri mediaURI) {
+        Bitmap bitmap = null;
+        try {
+            bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(getContentResolver(), mediaURI));
+
+            Log.e(TAG, "success loaded file.");
+        } catch (IOException e) {
+            Log.e(TAG, "failed to load file.");
+            e.printStackTrace();
+        }
+        return bitmap;
     }
 }
