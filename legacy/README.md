@@ -20,5 +20,8 @@ These examples are no longer updated and should be concerned abandoned.
 
 `VideoCapture3` shows how to record video with either Camera or Camera2 (API21+).  Note that using Camera in 21+ causes odd results like the video maybe upside down.
 
+`YouTubeDemo` Shows how to use the youtube API and key.  The youtube libraries are badly out of date and this example doesn't work well since API 29.  https://developers.google.com/youtube/android/player/ 
+
+
 These were example code for University of Wyoming, Cosc 4730 Mobile Programming course.
 All examples are for Android.
