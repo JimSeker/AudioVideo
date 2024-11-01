@@ -71,7 +71,7 @@ import edu.cs4730.piccapture1.databinding.ActivityMainBinding;
  * android 15 has broken/changed the way  the writer works?  the file doesn't exist when it is supposed
  * to so the example was dieing on a file not found.   it seems the file write is now delayed
  * so a new button was added and android15 check is decides if the displayfragment is called automatically.
- * 
+ *
  */
 
 public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback {
