@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.exifinterface.media.ExifInterface;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -16,7 +17,11 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageDecoder;
 import android.graphics.ImageFormat;
+import android.graphics.Matrix;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -36,6 +41,7 @@ import android.os.HandlerThread;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Size;
+import android.view.OrientationEventListener;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.View;
@@ -61,6 +67,11 @@ import edu.cs4730.piccapture1.databinding.ActivityMainBinding;
  * the logcat and toast show the files has been stored.
  * <p>
  * honesty, the new androidX cameraX methods are simpler.  and should be used, unless you are doing something more specific.
+ *
+ * android 15 has broken/changed the way  the writer works?  the file doesn't exist when it is supposed
+ * to so the example was dieing on a file not found.   it seems the file write is now delayed
+ * so a new button was added and android15 check is decides if the displayfragment is called automatically.
+ * 
  */
 
 public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback {
@@ -102,7 +113,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             return insets;
         });
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {  //For API 33+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED};
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {  //For API 33+
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES};
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q) to 32,
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
@@ -149,6 +162,13 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 } catch (CameraAccessException e) {
                     e.printStackTrace();
                 }
+            }
+        });
+        binding.display.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DisplayPicFragment newDialog = DisplayPicFragment.newInstance(imageFileUri);
+                newDialog.show(getSupportFragmentManager(), "displayPic");
             }
         });
     }
@@ -238,7 +258,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     };
 
     private int getJpegOrientation(CameraCharacteristics c, int deviceOrientation) {
-        if (deviceOrientation == android.view.OrientationEventListener.ORIENTATION_UNKNOWN)
+        if (deviceOrientation == OrientationEventListener.ORIENTATION_UNKNOWN)
             return 0;
         int sensorOrientation = c.get(CameraCharacteristics.SENSOR_ORIENTATION);
 
@@ -336,6 +356,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         private void save(byte[] bytes) throws IOException {
             try (OutputStream output = getContentResolver().openOutputStream(imageFileUri)) {
                 output.write(bytes);
+
             }
         }
 
@@ -360,13 +381,16 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             }
             Toast.makeText(getApplicationContext(), "Saved:" + file, Toast.LENGTH_SHORT).show();
             Log.v(TAG, "Saved:" + file);
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    DisplayPicFragment newDialog = DisplayPicFragment.newInstance(imageFileUri);
-                    newDialog.show(getSupportFragmentManager(), "displayPic");
-                }
-            });
+            //android 15 seems to have delayed the file writes and this fails.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM)
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        DisplayPicFragment newDialog = DisplayPicFragment.newInstance(imageFileUri);
+                        newDialog.show(getSupportFragmentManager(), "displayPic");
+
+                    }
+                });
             startPreview();
         }
     };
@@ -437,11 +461,18 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         if (type == MainActivity.MEDIA_TYPE_IMAGE) {
 
             if (local) {
+// test code, to see if android 15 or my file save was broken.  it's 15
+//                File[] list  = getExternalMediaDirs();
+//                if (list[0] != null) {
+//                    storageDir = list[0] ;
+//                } else {
+//                    storageDir = getFilesDir();
+//                }
                 storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
                 if (!storageDir.exists()) {
                     storageDir.mkdirs();
                 }
-                mediaFile = new File(storageDir.getPath() + File.separator + "IMG_" + timeStamp + ".jpg");
+                mediaFile = new File(storageDir, File.separator + "IMG_" + timeStamp + ".jpg");
                 returnUri = Uri.fromFile(mediaFile);
 
             } else { //onto the sdcard
@@ -480,6 +511,4 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         }
         return returnUri;
     }
-
-
 }

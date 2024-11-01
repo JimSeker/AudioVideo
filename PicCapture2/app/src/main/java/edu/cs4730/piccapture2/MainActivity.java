@@ -37,6 +37,11 @@ import edu.cs4730.piccapture2.databinding.ActivityMainBinding;
  * <p>
  * most of the code is in the CCamera2Preview for the actual camera.  This just calls a method to
  * take a picture and set the filename/Uri.
+ *
+ * note, something in android 15 has broken part of this example.  The file doesn't seem to save
+ * when it says it does.  So the example breaks with a file not found error.   A new button
+ * has been added and it will display the picture taken.  and the auto display is turned on
+ * in 15.  odd change.
  */
 public class MainActivity extends AppCompatActivity {
 
@@ -113,6 +118,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         );
+        findViewById(R.id.floatingActionButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mediaFileUri != null) {
+                    DisplayPicFragment newDialog = DisplayPicFragment.newInstance(mediaFileUri);
+                    newDialog.show(getSupportFragmentManager(), "displayPic");
+                }
+            }
+        });
         startCamera();
     }
 
@@ -128,15 +142,17 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onPic(Uri fileUri) {
                         Log.wtf("dialog", fileUri.toString());
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                //note this doesn't always work.  running this on a thread is a bad idea, but when I do
-                                //all "correctly" on a thread and then launch, it doesn't work.  odd.
-                                DisplayPicFragment newDialog = DisplayPicFragment.newInstance(fileUri);
-                                newDialog.show(getSupportFragmentManager(), "displayPic");
-                            }
-                        }).start();
+                        //android 15 seems to have delayed the file writes and this fails.
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM)
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    //note this doesn't always work.  running this on a thread is a bad idea, but when I do
+                                    //all "correctly" on a thread and then launch, it doesn't work.  odd.
+                                    DisplayPicFragment newDialog = DisplayPicFragment.newInstance(fileUri);
+                                    newDialog.show(getSupportFragmentManager(), "displayPic");
+                                }
+                            });
                     }
                 });
                 binding.camera2Preview.addView(mPreview);
