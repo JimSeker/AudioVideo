@@ -101,13 +101,14 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { //api 33+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_MEDIA_LOCATION, Manifest.permission.READ_MEDIA_VIDEO, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED};
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { //api 33+
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_MEDIA_LOCATION, Manifest.permission.READ_MEDIA_VIDEO};
-        } else  if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q),
+        } else  //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q),
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_MEDIA_LOCATION};
-        } else {  //for 26 to 28.
-            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-        }
+//        } else   //for 26 to 28.
+//            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
         // Install a SurfaceHolder.Callback so we get notified when the
         // underlying surface is created and destroyed.
@@ -260,8 +261,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     };
 
     ///////////////////////
+
     /// Now the methods to take a video
-    ////////////////////
+    /// /////////////////
 
 
     //everything to setup to record a video

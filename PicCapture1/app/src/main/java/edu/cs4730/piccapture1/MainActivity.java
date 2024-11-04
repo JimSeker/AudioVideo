@@ -67,11 +67,10 @@ import edu.cs4730.piccapture1.databinding.ActivityMainBinding;
  * the logcat and toast show the files has been stored.
  * <p>
  * honesty, the new androidX cameraX methods are simpler.  and should be used, unless you are doing something more specific.
- *
+ * <p>
  * android 15 has broken/changed the way  the writer works?  the file doesn't exist when it is supposed
  * to so the example was dieing on a file not found.   it seems the file write is now delayed
  * so a new button was added and android15 check is decides if the displayfragment is called automatically.
- *
  */
 
 public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback {
@@ -117,11 +116,11 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES, Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED};
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {  //For API 33+
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.READ_MEDIA_IMAGES};
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q) to 32,
+        } else //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {  //For API 29+ (q) to 32,
             REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
-        } else { // for 26 to 28.
-            REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
-        }
+        //} else  // for 26 to 28.
+        // REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
         rpl = registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), new ActivityResultCallback<Map<String, Boolean>>() {
             @Override
             public void onActivityResult(Map<String, Boolean> isGranted) {
