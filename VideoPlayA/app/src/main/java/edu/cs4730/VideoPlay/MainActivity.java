@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+            return WindowInsetsCompat.CONSUMED;
         });
         //It's not context, actually needs the activity, so it can display the controls to the screen.
         binding.videoView.setMediaController(new MediaController(this));
