@@ -1,0 +1,18 @@
+[versions]
+androidGradlePlugin = "9.4.0"
+androidxAppcompat = "1.8.0"
+androidxConstraintlayout = "2.2.2"
+androidxCamera = "1.6.2"
+material = "1.14.0"
+
+[libraries]
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppcompat" }
+androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidxConstraintlayout" }
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "androidxCamera" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "androidxCamera" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "androidxCamera" }
+androidx-camera-extensions = { module = "androidx.camera:camera-extensions", version.ref = "androidxCamera" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }
