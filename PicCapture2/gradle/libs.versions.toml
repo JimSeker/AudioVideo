@@ -1,0 +1,17 @@
+[versions]
+activity = "1.13.0"
+androidGradlePlugin = "9.4.0"
+androidxAppcompat = "1.8.0"
+androidxConstraintlayout = "2.2.2"
+material = "1.14.0"
+cameraCamera2Pipe = "1.6.2"
+
+[libraries]
+androidx-activity = { module = "androidx.activity:activity", version.ref = "activity" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppcompat" }
+androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidxConstraintlayout" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+androidx-camera-camera2-pipe = { group = "androidx.camera", name = "camera-camera2-pipe", version.ref = "cameraCamera2Pipe" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

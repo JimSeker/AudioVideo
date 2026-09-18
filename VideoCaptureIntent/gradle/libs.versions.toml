@@ -1,0 +1,15 @@
+[versions]
+activity = "1.13.0"
+androidGradlePlugin = "9.4.0"
+androidxAppcompat = "1.8.0"
+androidxConstraintlayout = "2.2.2"
+material = "1.14.0"
+
+[libraries]
+androidx-activity = { module = "androidx.activity:activity", version.ref = "activity" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppcompat" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "androidxConstraintlayout" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "androidGradlePlugin" }

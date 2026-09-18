@@ -91,10 +91,10 @@ public class MainActivity extends AppCompatActivity {
         //local to me, bad quality, but good sound.
         file = "http://www.cs.uwyo.edu/~seker/courses/4730/example/the-empire.3gp";
         //no audio, good picture from https://standaloneinstaller.com/blog/big-list-of-sample-videos-for-testers-124.html
-        file = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.3gp";
+        //file = "http://mirrors.standaloneinstaller.com/video-sample/jellyfish-25-mbps-hd-hevc.3gp";
         //about 3 minutes, sound and video. from https://sample-videos.com/
         //file = "https://sample-videos.com/video123/3gp/240/big_buck_bunny_240p_10mb.3gp";
-        file = "https://sample-videos.com/video321/mp4/360/big_buck_bunny_360p_5mb.mp4";
+       // file = "https://sample-videos.com/video321/mp4/360/big_buck_bunny_360p_5mb.mp4";
         videoUri = Uri.parse(file);
         binding.videoView.setVideoURI(videoUri);
 
