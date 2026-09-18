@@ -4,16 +4,15 @@ plugins {
 
 android {
     namespace = "edu.cs4730.audiorecorddemo"
-    compileSdk = 35
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "edu.cs4730.audiorecorddemo"
-        minSdk = 29
-        targetSdk = 35
+        minSdk = 32
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -26,8 +25,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         viewBinding = true

@@ -14,6 +14,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AudioPlay_kt"
 include(":app")
- 

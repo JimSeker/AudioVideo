@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace = "edu.cs4730.audioplay_kt"
+    namespace = "edu.cs4730.camerapreview"
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "edu.cs4730.audioplay_kt"
+        applicationId = "edu.cs4730.camerapreview"
         minSdk = 32
         targetSdk = 37
         versionCode = 1
@@ -17,10 +17,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
 
@@ -35,9 +32,8 @@ android {
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+    implementation(libs.androidx.exifinterface)
+    implementation(libs.google.material)
     implementation(libs.androidx.activity)
-    implementation(libs.androidx.constraintlayout)
 }
