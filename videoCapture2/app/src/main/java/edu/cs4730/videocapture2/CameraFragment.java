@@ -12,6 +12,8 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.OutputConfiguration;
+import android.hardware.camera2.params.SessionConfiguration;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -23,12 +25,9 @@ import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Surface;
 import android.view.SurfaceHolder;
-import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.util.Size;
 import android.widget.Toast;
 
@@ -39,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Executor;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -62,7 +62,8 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
     CaptureRequest.Builder captureBuilder;
     private MediaRecorder mMediaRecorder;
     CameraCharacteristics characteristics;
-    List<Surface> outputSurfaces;
+    //List<Surface> outputSurfaces;
+    List<OutputConfiguration> outputConfigs;
     Handler backgroundHandler;
     //File file;
     Uri mFileUri;
@@ -221,7 +222,7 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
             return;
         }
 
-        mMediaRecorder = new MediaRecorder();
+        mMediaRecorder = new MediaRecorder(requireContext());
         CameraManager manager = (CameraManager) requireContext().getSystemService(Context.CAMERA_SERVICE);
         //setup for video recording.
         try {
@@ -245,10 +246,13 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
             }
 
 
-            outputSurfaces = new ArrayList<Surface>(2);
-            outputSurfaces.add(mMediaRecorder.getSurface());
+//            outputSurfaces = new ArrayList<Surface>(2);
+//            outputSurfaces.add(mMediaRecorder.getSurface());
+//            outputSurfaces.add(mHolder.getSurface());
 
-            outputSurfaces.add(mHolder.getSurface());
+            outputConfigs = new ArrayList<>(2);
+            outputConfigs.add(new OutputConfiguration(mMediaRecorder.getSurface()));
+            outputConfigs.add(new OutputConfiguration(mHolder.getSurface()));
 
             HandlerThread thread = new HandlerThread("CameraVideo");
             thread.start();
@@ -260,7 +264,17 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
 
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
 
-            mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroundHandler);
+            //old way
+            //mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroundHandler);
+            captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+            Executor executor = ContextCompat.getMainExecutor(requireContext());
+            SessionConfiguration sessionConfig = new SessionConfiguration(
+                SessionConfiguration.SESSION_REGULAR,
+                outputConfigs,
+                executor,
+                mCaptureStateCallback
+            );
+            mCameraDevice.createCaptureSession(sessionConfig);
 
         } catch (CameraAccessException e) {
             Log.e(TAG, "Well something failed in setup record");
@@ -322,7 +336,7 @@ public class CameraFragment extends Fragment implements SurfaceHolder.Callback {
         }
 
         @Override
-        public void onConfigureFailed(CameraCaptureSession session) {
+        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
 
         }
     };

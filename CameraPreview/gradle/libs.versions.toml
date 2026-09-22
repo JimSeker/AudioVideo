@@ -3,7 +3,7 @@ androidxAppcompat = "1.8.0"
 androidxExifinterface = "1.4.2"
 androidxActivity = "1.13.0"
 googleMaterial = "1.14.0"
-androidGradlePlugin = "9.4.0"
+androidGradlePlugin = "9.4.1"
 
 [libraries]
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "androidxAppcompat" }

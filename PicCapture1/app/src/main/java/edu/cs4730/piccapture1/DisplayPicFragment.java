@@ -4,7 +4,6 @@ package edu.cs4730.piccapture1;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,7 +14,6 @@ import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.fragment.app.DialogFragment;
 
 import android.util.Log;
-import android.view.LayoutInflater;
 
 import java.io.IOException;
 
@@ -45,15 +43,15 @@ public class DisplayPicFragment extends DialogFragment {
         picUri = Uri.parse(requireArguments().getString("uri"));
         Log.wtf("dialog", picUri.toString());
 
-        binding = FragmentDisplayPicBinding.inflate(LayoutInflater.from(requireActivity()));
+        binding = FragmentDisplayPicBinding.inflate(getLayoutInflater());
         Bitmap bitmap;
         try {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+ //           if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
                 //at some point, I need to do this correctly.  but it still works, so ignoring it.
                 bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(requireActivity().getContentResolver(), picUri));
-            } else {
-                bitmap = BitmapFactory.decodeStream(requireActivity().getContentResolver().openInputStream(picUri));
-            }
+//            } else {
+//                bitmap = BitmapFactory.decodeStream(requireActivity().getContentResolver().openInputStream(picUri));
+//            }
             binding.imageView.setImageBitmap(bitmap);
         } catch (IOException e) {
             e.printStackTrace();

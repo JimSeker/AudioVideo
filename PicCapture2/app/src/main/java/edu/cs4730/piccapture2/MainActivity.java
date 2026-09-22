@@ -40,7 +40,7 @@ import edu.cs4730.piccapture2.databinding.ActivityMainBinding;
  *
  * note, something in android 15 has broken part of this example.  The file doesn't seem to save
  * when it says it does.  So the example breaks with a file not found error.   A new button
- * has been added and it will display the picture taken.  and the auto display is turned on
+ * has been added which will display the picture taken.  and the auto display is turned on
  * in 15.  odd change.
  */
 public class MainActivity extends AppCompatActivity {

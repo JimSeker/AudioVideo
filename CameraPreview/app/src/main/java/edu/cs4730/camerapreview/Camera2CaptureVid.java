@@ -1,6 +1,5 @@
 package edu.cs4730.camerapreview;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.hardware.camera2.CameraAccessException;
@@ -10,6 +9,8 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.OutputConfiguration;
+import android.hardware.camera2.params.SessionConfiguration;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -18,7 +19,9 @@ import android.os.HandlerThread;
 import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import android.util.Log;
 import android.util.Size;
@@ -26,10 +29,11 @@ import android.util.SparseIntArray;
 import android.view.Surface;
 import android.widget.Toast;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 /**
  * This works great with API 23 and not well on 21.  Also, the rotation for landscape shows correctly
@@ -53,7 +57,8 @@ public class Camera2CaptureVid {
     CaptureRequest.Builder captureBuilder;
     private MediaRecorder mMediaRecorder;
     CameraCharacteristics characteristics;
-    List<Surface> outputSurfaces;
+    //List<Surface> outputSurfaces;
+    List<OutputConfiguration> outputConfigs;
     Handler backgroundHandler;
     Uri mediaFile;
     CameraCaptureSession mSession;
@@ -79,7 +84,7 @@ public class Camera2CaptureVid {
             return;
         }
 
-        mMediaRecorder = new MediaRecorder();
+        mMediaRecorder = new MediaRecorder(context);
 
         CameraManager manager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
         //setup for video recording.
@@ -97,10 +102,9 @@ public class Camera2CaptureVid {
 
             captureBuilder = camera2Preview.mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
 
-            outputSurfaces = new ArrayList<Surface>(2);
-            outputSurfaces.add(mMediaRecorder.getSurface());
-
-            outputSurfaces.add(camera2Preview.mHolder.getSurface());
+            outputConfigs = new ArrayList<>(2);
+            outputConfigs.add(new OutputConfiguration(mMediaRecorder.getSurface()));
+            outputConfigs.add(new OutputConfiguration(camera2Preview.mHolder.getSurface()));
 
             HandlerThread thread = new HandlerThread("CameraVideo");
             thread.start();
@@ -111,8 +115,15 @@ public class Camera2CaptureVid {
             captureBuilder.addTarget(camera2Preview.mHolder.getSurface());
 
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
-
-            camera2Preview.mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroundHandler);
+            Executor executor = ContextCompat.getMainExecutor(context);
+            SessionConfiguration sessionConfig = new SessionConfiguration(
+                SessionConfiguration.SESSION_REGULAR,
+                outputConfigs,
+                executor,
+                mCaptureStateCallback
+            );
+            camera2Preview.mCameraDevice.createCaptureSession(sessionConfig);
+            //camera2Preview.mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroundHandler);
 
 
         } catch (CameraAccessException e) {
@@ -196,7 +207,7 @@ public class Camera2CaptureVid {
         mMediaRecorder.setVideoSize(mVideoSize.getWidth(), mVideoSize.getHeight());
         mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         mMediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-        int rotation = activity.getWindowManager().getDefaultDisplay().getRotation();
+        int rotation = activity.getDisplay().getRotation();
         int orientation = ORIENTATIONS.get(rotation);
         mMediaRecorder.setOrientationHint(orientation);
 
@@ -219,7 +230,7 @@ public class Camera2CaptureVid {
         }
 
         @Override
-        public void onConfigureFailed(CameraCaptureSession session) {
+        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
 
         }
     };

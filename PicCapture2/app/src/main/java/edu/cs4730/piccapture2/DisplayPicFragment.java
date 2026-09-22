@@ -43,16 +43,16 @@ public class DisplayPicFragment extends DialogFragment {
         picUri = Uri.parse(requireArguments().getString("uri"));
         Log.wtf("dialog", picUri.toString());
 
-        binding = DialogDisplayPicBinding.inflate(LayoutInflater.from(requireActivity()));
+        binding = DialogDisplayPicBinding.inflate(getLayoutInflater());
         Bitmap bitmap;
         try {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+//            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
                 bitmap = ImageDecoder.decodeBitmap(
                     ImageDecoder.createSource(requireActivity().getContentResolver(), picUri)
                 );
-            } else {
-                bitmap = BitmapFactory.decodeStream(requireActivity().getContentResolver().openInputStream(picUri));
-            }
+//            } else {
+//                bitmap = BitmapFactory.decodeStream(requireActivity().getContentResolver().openInputStream(picUri));
+//            }
             binding.imageView.setImageBitmap(bitmap);
         } catch (IOException e) {
             e.printStackTrace();

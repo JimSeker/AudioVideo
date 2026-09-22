@@ -12,7 +12,13 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.TotalCaptureResult;
+
+import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.exifinterface.media.ExifInterface;
+
+import android.hardware.camera2.params.OutputConfiguration;
+import android.hardware.camera2.params.SessionConfiguration;
 import android.media.Image;
 import android.media.ImageReader;
 import android.net.Uri;
@@ -21,15 +27,14 @@ import android.os.HandlerThread;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Size;
-import android.view.Surface;
 import android.widget.Toast;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static android.content.res.Configuration.ORIENTATION_LANDSCAPE;
 import static android.content.res.Configuration.ORIENTATION_PORTRAIT;
@@ -54,7 +59,7 @@ public class Camera2CapturePic {
     ImageReader reader;
     Handler backgroudHandler;
     CaptureRequest.Builder captureBuilder;
-    List<Surface> outputSurfaces;
+    List<OutputConfiguration> outputConfigs;
     Uri mediaFileUri;
     int deviceorientation = ORIENTATION_PORTRAIT;
 
@@ -79,9 +84,8 @@ public class Camera2CapturePic {
                 height = jpegSizes[0].getHeight();
             }
             reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
-            outputSurfaces = new ArrayList<Surface>(2);
-            outputSurfaces.add(reader.getSurface());
-
+            outputConfigs = new ArrayList<>(2);
+            outputConfigs.add(new OutputConfiguration(reader.getSurface()));
 
             HandlerThread thread = new HandlerThread("CameraPicture");
             thread.start();
@@ -100,12 +104,9 @@ public class Camera2CapturePic {
             deviceorientation = context.getResources().getConfiguration().orientation;
             captureBuilder.set(CaptureRequest.JPEG_ORIENTATION, getJpegOrientation(characteristics, deviceorientation));
 
-
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
-
-
     }
 
     /**
@@ -114,7 +115,15 @@ public class Camera2CapturePic {
     public void TakePicture(Uri fileUri) {
         mediaFileUri = fileUri;
         try {
-            camera2Preview.mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroudHandler);
+            Executor executor = ContextCompat.getMainExecutor(context);
+            SessionConfiguration sessionConfig = new SessionConfiguration(
+                SessionConfiguration.SESSION_REGULAR,
+                outputConfigs,
+                executor,
+                mCaptureStateCallback
+            );
+            camera2Preview.mCameraDevice.createCaptureSession(sessionConfig);
+            //camera2Preview.mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroudHandler);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -188,8 +197,8 @@ public class Camera2CapturePic {
     CameraCaptureSession.CaptureCallback captureListener = new CameraCaptureSession.CaptureCallback() {
 
         @Override
-        public void onCaptureCompleted(CameraCaptureSession session,
-                                       CaptureRequest request, TotalCaptureResult result) {
+        public void onCaptureCompleted(@NonNull CameraCaptureSession session,
+                                       @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
             super.onCaptureCompleted(session, request, result);
             //this line is for images only, because this is for picture, not video.  the main code may think both though.
             String[] filePathColumn = {MediaStore.Images.Media.DATA};
@@ -221,7 +230,7 @@ public class Camera2CapturePic {
         }
 
         @Override
-        public void onConfigureFailed(CameraCaptureSession session) {
+        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
 
         }
     };

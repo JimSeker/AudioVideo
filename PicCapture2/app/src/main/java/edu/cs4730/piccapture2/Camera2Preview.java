@@ -14,34 +14,40 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.OutputConfiguration;
+import android.hardware.camera2.params.SessionConfiguration;
 import android.media.Image;
 import android.media.ImageReader;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
+
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import android.util.Log;
 import android.util.Size;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.view.View;
 import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 /**
  * This is a helper class, where everything is buried in this class, so
  * that it the code is very simple calling it.
- *
+ * <p>
  * Construct it with a context and camera id number.
- *
+ * <p>
  * call takepicture with a file (full path) and it will write it out.
  *
  */
@@ -64,9 +70,10 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
     ImageReader reader;
     Handler backgroudHandler;
     CaptureRequest.Builder captureBuilder;
-    List<Surface> outputSurfaces;
-   // File file;
-   Uri mediaFileUri;
+    //List<Surface> outputSurfaces;
+    List<OutputConfiguration> outputConfigs;
+    // File file;
+    Uri mediaFileUri;
 
     public Camera2Preview(Context context, String CameraID) {
         super(context);
@@ -87,7 +94,17 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
     public void TakePicture(Uri fileUri) {
         mediaFileUri = fileUri;
         try {
-            mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroudHandler);
+            //old way deprecated
+            //mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroudHandler);
+            //new way.
+            Executor executor = ContextCompat.getMainExecutor(context);
+            SessionConfiguration sessionConfig = new SessionConfiguration(
+                SessionConfiguration.SESSION_REGULAR,
+                outputConfigs,
+                executor,
+                mCaptureStateCallback
+            );
+            mCameraDevice.createCaptureSession(sessionConfig);
         } catch (CameraAccessException e) {
             e.printStackTrace();
         }
@@ -96,18 +113,18 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
 
     //Methods for the SurfaceView
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
+    public void surfaceCreated(@NonNull SurfaceHolder holder) {
         Log.e(TAG, "Surfaceview Created");
         openCamera();
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+    public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
         //startPreview();
     }
 
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
+    public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
         if (mCameraDevice != null) {
             mCameraDevice.close();
         }
@@ -137,9 +154,10 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
                     height = jpegSizes[0].getHeight();
                 }
                 reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
-                outputSurfaces = new ArrayList<Surface>(2);
-                outputSurfaces.add(reader.getSurface());
-
+//                outputSurfaces = new ArrayList<Surface>(2);
+//                outputSurfaces.add(reader.getSurface());
+                outputConfigs = new ArrayList<>(2);
+                outputConfigs.add(new OutputConfiguration(reader.getSurface()));
 
                 HandlerThread thread = new HandlerThread("CameraPicture");
                 thread.start();
@@ -198,21 +216,38 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
         mPreviewBuilder.addTarget(surface);
 
         try {
-            mCameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback() {
+            //old way.
+//            mCameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback() {
+//                @Override
+//                public void onConfigured(CameraCaptureSession session) {
+//                    mPreviewSession = session;
+//                    updatePreview();
+//                }
+//                @Override
+//                public void onConfigureFailed(CameraCaptureSession session) {
+//                    Toast.makeText(context, "onConfigureFailed", Toast.LENGTH_LONG).show();
+//                }
+//            }, null);
+            Executor executor = ContextCompat.getMainExecutor(context);
+            OutputConfiguration outputConfiguration = new OutputConfiguration(surface);
+            SessionConfiguration sessionConfig = new SessionConfiguration(
+                SessionConfiguration.SESSION_REGULAR,
+                Collections.singletonList(outputConfiguration),
+                executor,
+                new CameraCaptureSession.StateCallback() {
+                    @Override
+                    public void onConfigured(@NonNull CameraCaptureSession session) {
+                        mPreviewSession = session;
+                        updatePreview();
+                    }
 
-                @Override
-                public void onConfigured(CameraCaptureSession session) {
-
-                    mPreviewSession = session;
-                    updatePreview();
+                    @Override
+                    public void onConfigureFailed(@NonNull CameraCaptureSession session) {
+                        Toast.makeText(context, "onConfigureFailed", Toast.LENGTH_LONG).show();
+                    }
                 }
-
-                @Override
-                public void onConfigureFailed(CameraCaptureSession session) {
-
-                    Toast.makeText(context, "onConfigureFailed", Toast.LENGTH_LONG).show();
-                }
-            }, null);
+            );
+            mCameraDevice.createCaptureSession(sessionConfig);
         } catch (CameraAccessException e) {
 
             e.printStackTrace();
@@ -247,10 +282,10 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
     /*
       This is the callback necessary for the manager.openCamera Call back needed above.
      */
-    private CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
+    private final CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
 
         @Override
-        public void onOpened(CameraDevice camera) {
+        public void onOpened(@NonNull CameraDevice camera) {
 
             Log.e(TAG, "onOpened");
             mCameraDevice = camera;
@@ -276,13 +311,13 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
 
 
         @Override
-        public void onDisconnected(CameraDevice camera) {
+        public void onDisconnected(@NonNull CameraDevice camera) {
 
             Log.e(TAG, "onDisconnected");
         }
 
         @Override
-        public void onError(CameraDevice camera, int error) {
+        public void onError(@NonNull CameraDevice camera, int error) {
 
             Log.e(TAG, "onError");
         }
@@ -328,8 +363,8 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
     CameraCaptureSession.CaptureCallback captureListener = new CameraCaptureSession.CaptureCallback() {
 
         @Override
-        public void onCaptureCompleted(CameraCaptureSession session,
-                                       CaptureRequest request, TotalCaptureResult result) {
+        public void onCaptureCompleted(@NonNull CameraCaptureSession session,
+                                       @NonNull CaptureRequest request, @NonNull TotalCaptureResult result) {
 
             super.onCaptureCompleted(session, request, result);
             //this line is for images only, because this is for picture, not video.  the main code may think both though.
@@ -368,7 +403,7 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
         }
 
         @Override
-        public void onConfigureFailed(CameraCaptureSession session) {
+        public void onConfigureFailed(@NonNull CameraCaptureSession session) {
 
         }
     };
@@ -378,6 +413,7 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
      */
     // Define listener member variable
     private OnPicCallback listener = null;
+
     // Define the listener interface
     public interface OnPicCallback {
         void onPic(Uri fileUri);  //honesty the main sends this, but just case, return the file info.

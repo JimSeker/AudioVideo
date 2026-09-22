@@ -9,7 +9,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.exifinterface.media.ExifInterface;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -17,11 +16,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.ImageDecoder;
+
 import android.graphics.ImageFormat;
-import android.graphics.Matrix;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraCharacteristics;
@@ -30,6 +26,8 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
 import android.hardware.camera2.TotalCaptureResult;
+import android.hardware.camera2.params.OutputConfiguration;
+import android.hardware.camera2.params.SessionConfiguration;
 import android.media.Image;
 import android.media.ImageReader;
 import android.net.Uri;
@@ -54,10 +52,12 @@ import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import edu.cs4730.piccapture1.databinding.ActivityMainBinding;
 
@@ -70,7 +70,7 @@ import edu.cs4730.piccapture1.databinding.ActivityMainBinding;
  * <p>
  * android 15 has broken/changed the way  the writer works?  the file doesn't exist when it is supposed
  * to so the example was dieing on a file not found.   it seems the file write is now delayed
- * so a new button was added and android15 check is decides if the displayfragment is called automatically.
+ * so a new button was added and android15 check is deciding if the displayfragment is called automatically.
  */
 
 public class MainActivity extends AppCompatActivity implements SurfaceHolder.Callback {
@@ -97,7 +97,8 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     ImageReader reader;
     Handler backgroudHandler;
     CaptureRequest.Builder captureBuilder;
-    List<Surface> outputSurfaces;
+   // List<Surface> outputSurfaces;
+    List<OutputConfiguration> outputConfigs;
     //File file;
     Uri imageFileUri;
 
@@ -143,7 +144,18 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 //create a file in the local app pictures directory.
                 imageFileUri = getOutputMediaFile(MEDIA_TYPE_IMAGE, true);
                 try {
-                    mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroudHandler);
+                      //old way, deprecated.
+                     //mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroudHandler);
+
+                    Executor executor = ContextCompat.getMainExecutor(getApplicationContext());
+                    SessionConfiguration sessionConfig = new SessionConfiguration(
+                        SessionConfiguration.SESSION_REGULAR,
+                        outputConfigs,
+                        executor,
+                        mCaptureStateCallback
+                    );
+                    mCameraDevice.createCaptureSession(sessionConfig);
+
                 } catch (CameraAccessException e) {
                     e.printStackTrace();
                 }
@@ -157,7 +169,16 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 //this get a unique file name with .jpg in the media pictures directory.
                 imageFileUri = getOutputMediaFile(MEDIA_TYPE_IMAGE, false);
                 try {
-                    mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroudHandler);
+                    //old way, deprecated.
+                     //mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroudHandler);
+                    Executor executor = ContextCompat.getMainExecutor(getApplicationContext());
+                    SessionConfiguration sessionConfig = new SessionConfiguration(
+                        SessionConfiguration.SESSION_REGULAR,
+                        outputConfigs,
+                        executor,
+                        mCaptureStateCallback
+                    );
+                    mCameraDevice.createCaptureSession(sessionConfig);
                 } catch (CameraAccessException e) {
                     e.printStackTrace();
                 }
@@ -196,9 +217,11 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
                 height = jpegSizes[0].getHeight();
             }
             reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
-            outputSurfaces = new ArrayList<Surface>(2);
-            outputSurfaces.add(reader.getSurface());
+//            outputSurfaces = new ArrayList<Surface>(2);
+//            outputSurfaces.add(reader.getSurface());
 
+            outputConfigs = new ArrayList<>(2);
+            outputConfigs.add(new OutputConfiguration(reader.getSurface()));
 
             HandlerThread thread = new HandlerThread("CameraPicture");
             thread.start();
@@ -215,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     /*
   This is the callback necessary for the manager.openCamera Call back needed above.
  */
-    private CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
+    private final CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
 
         @Override
         public void onOpened(@NonNull CameraDevice camera) {
@@ -283,7 +306,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             return;
         }
 
-        //get the surface, so I can added to varing places...
+        //get the surface, so I can add it to varying places...
         Surface surface = surfaceHolder.getSurface();
 
         try {
@@ -295,23 +318,44 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
         mPreviewBuilder.addTarget(surface);
 
         try {
-            mCameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback() {
+            //old deprecated method.
+//            mCameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback() {
+//
+//                @Override
+//                public void onConfigured(@NonNull CameraCaptureSession session) {
+//
+//                    mPreviewSession = session;
+//                    updatePreview();
+//                }
+//
+//                @Override
+//                public void onConfigureFailed(@NonNull CameraCaptureSession session) {
+//
+//                    Toast.makeText(getApplicationContext(), "onConfigureFailed", Toast.LENGTH_LONG).show();
+//                }
+//            }, null);
 
-                @Override
-                public void onConfigured(@NonNull CameraCaptureSession session) {
+            Executor executor = ContextCompat.getMainExecutor(getApplicationContext());
+            OutputConfiguration outputConfiguration = new OutputConfiguration(surface);
+            SessionConfiguration sessionConfig = new SessionConfiguration(
+                SessionConfiguration.SESSION_REGULAR,
+                Collections.singletonList(outputConfiguration),
+                executor,
+                new CameraCaptureSession.StateCallback() {
+                    @Override
+                    public void onConfigured(@NonNull CameraCaptureSession session) {
+                        mPreviewSession = session;
+                        updatePreview();
+                    }
 
-                    mPreviewSession = session;
-                    updatePreview();
+                    @Override
+                    public void onConfigureFailed(@NonNull CameraCaptureSession session) {
+                        Toast.makeText(getApplicationContext(), "onConfigureFailed", Toast.LENGTH_LONG).show();
+                    }
                 }
-
-                @Override
-                public void onConfigureFailed(@NonNull CameraCaptureSession session) {
-
-                    Toast.makeText(getApplicationContext(), "onConfigureFailed", Toast.LENGTH_LONG).show();
-                }
-            }, null);
+            );
+            mCameraDevice.createCaptureSession(sessionConfig);
         } catch (CameraAccessException e) {
-
             e.printStackTrace();
         }
     }
@@ -401,7 +445,6 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             try {
                 session.capture(captureBuilder.build(), captureListener, backgroudHandler);
             } catch (CameraAccessException e) {
-
                 e.printStackTrace();
             }
         }

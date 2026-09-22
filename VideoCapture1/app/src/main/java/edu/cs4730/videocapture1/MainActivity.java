@@ -13,6 +13,8 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.OutputConfiguration;
+import android.hardware.camera2.params.SessionConfiguration;
 import android.hardware.camera2.params.StreamConfigurationMap;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -50,6 +52,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import edu.cs4730.videocapture1.databinding.ActivityMainBinding;
 
@@ -86,7 +89,9 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
     CaptureRequest.Builder captureBuilder;
     private MediaRecorder mMediaRecorder;
     CameraCharacteristics characteristics;
-    List<Surface> outputSurfaces;
+    //List<Surface> outputSurfaces;
+    List<OutputConfiguration> outputConfigs;
+
     Handler backgroundHandler;
     CameraCaptureSession mSession;
     ActivityResultLauncher<String[]> rpl;
@@ -273,7 +278,7 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             return;
         }
 
-        mMediaRecorder = new MediaRecorder();
+        mMediaRecorder = new MediaRecorder(getApplicationContext());
 
         CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
         //setup for video recording.
@@ -299,10 +304,15 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
             }
 
 
-            outputSurfaces = new ArrayList<Surface>(2);
-            outputSurfaces.add(mMediaRecorder.getSurface());
+//            outputSurfaces = new ArrayList<Surface>(2);
+//            outputSurfaces.add(mMediaRecorder.getSurface());
+//            outputSurfaces.add(mHolder.getSurface());
 
-            outputSurfaces.add(mHolder.getSurface());
+            outputConfigs = new ArrayList<>(2);
+            outputConfigs.add(new OutputConfiguration(mMediaRecorder.getSurface()));
+            outputConfigs.add(new OutputConfiguration(mHolder.getSurface()));
+
+
 
             HandlerThread thread = new HandlerThread("CameraVideo");
             thread.start();
@@ -314,7 +324,17 @@ public class MainActivity extends AppCompatActivity implements SurfaceHolder.Cal
 
             captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
 
-            mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroundHandler);
+            //oldway
+            //mCameraDevice.createCaptureSession(outputSurfaces, mCaptureStateCallback, backgroundHandler);
+            captureBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
+            Executor executor = ContextCompat.getMainExecutor(getApplicationContext());
+            SessionConfiguration sessionConfig = new SessionConfiguration(
+                SessionConfiguration.SESSION_REGULAR,
+                outputConfigs,
+                executor,
+                mCaptureStateCallback
+            );
+            mCameraDevice.createCaptureSession(sessionConfig);
 
         } catch (CameraAccessException e) {
             Log.e(TAG, "Well something failed in setup record");

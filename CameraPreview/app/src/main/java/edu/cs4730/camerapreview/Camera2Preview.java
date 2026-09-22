@@ -9,22 +9,30 @@ import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraMetadata;
 import android.hardware.camera2.CaptureRequest;
+import android.hardware.camera2.params.OutputConfiguration;
+import android.hardware.camera2.params.SessionConfiguration;
 import android.os.Handler;
 import android.os.HandlerThread;
+
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.widget.Toast;
-import java.util.Arrays;
+
+import java.util.Collections;
+import java.util.concurrent.Executor;
 
 
 /**
- *  This class is designed to show the preview only.
- *  To take a picture or video, another class would need to be written that takes this class
+ * This class is designed to show the preview only.
+ * To take a picture or video, another class would need to be written that takes this class
  */
-public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callback{
+public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callback {
 
 
     public SurfaceHolder mHolder;
@@ -53,18 +61,18 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
 
     //Methods for the SurfaceView
     @Override
-    public void surfaceCreated(SurfaceHolder holder) {
+    public void surfaceCreated(@NonNull SurfaceHolder holder) {
         Log.e(TAG, "Surfaceview Created");
         openCamera();
     }
 
     @Override
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+    public void surfaceChanged(@NonNull SurfaceHolder holder, int format, int width, int height) {
         //startPreview();
     }
 
     @Override
-    public void surfaceDestroyed(SurfaceHolder holder) {
+    public void surfaceDestroyed(@NonNull SurfaceHolder holder) {
         if (mCameraDevice != null) {
             mCameraDevice.close();
         }
@@ -98,7 +106,7 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
             return;
         }
         //get the surface, so I can added to varying places...
-       surface = mHolder.getSurface();
+        surface = mHolder.getSurface();
 
         try {
             mPreviewBuilder = mCameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
@@ -109,21 +117,26 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
         mPreviewBuilder.addTarget(surface);
 
         try {
-            mCameraDevice.createCaptureSession(Arrays.asList(surface), new CameraCaptureSession.StateCallback() {
+            Executor executor = ContextCompat.getMainExecutor(context);
+            OutputConfiguration outputConfiguration = new OutputConfiguration(surface);
+            SessionConfiguration sessionConfig = new SessionConfiguration(
+                SessionConfiguration.SESSION_REGULAR,
+                Collections.singletonList(outputConfiguration),
+                executor,
+                new CameraCaptureSession.StateCallback() {
+                    @Override
+                    public void onConfigured(@NonNull CameraCaptureSession session) {
+                        mPreviewSession = session;
+                        updatePreview();
+                    }
 
-                @Override
-                public void onConfigured(CameraCaptureSession session) {
-
-                    mPreviewSession = session;
-                    updatePreview();
+                    @Override
+                    public void onConfigureFailed(@NonNull CameraCaptureSession session) {
+                        Toast.makeText(context, "onConfigureFailed", Toast.LENGTH_LONG).show();
+                    }
                 }
-
-                @Override
-                public void onConfigureFailed(CameraCaptureSession session) {
-
-                    Toast.makeText(context, "onConfigureFailed", Toast.LENGTH_LONG).show();
-                }
-            }, null);
+            );
+            mCameraDevice.createCaptureSession(sessionConfig);
         } catch (CameraAccessException e) {
 
             e.printStackTrace();
@@ -143,18 +156,17 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
         try {
             mPreviewSession.setRepeatingRequest(mPreviewBuilder.build(), null, backgroundHandler);
         } catch (CameraAccessException e) {
-
             e.printStackTrace();
         }
     }
 
     // all the listeners, callbacks that are needed here.
     /**
-      This is the callback necessary for the manager.openCamera Call back needed above.
+     * This is the callback necessary for the manager.openCamera Call back needed above.
      */
-    private CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
+    private final CameraDevice.StateCallback mStateCallback = new CameraDevice.StateCallback() {
         @Override
-        public void onOpened(CameraDevice camera) {
+        public void onOpened(@NonNull CameraDevice camera) {
             Log.e(TAG, "onOpened");
             mCameraDevice = camera;
             //setup the capture of the current surface.
@@ -162,18 +174,16 @@ public class Camera2Preview extends SurfaceView implements SurfaceHolder.Callbac
         }
 
         @Override
-        public void onDisconnected(CameraDevice camera) {
+        public void onDisconnected(@NonNull CameraDevice camera) {
             Log.e(TAG, "onDisconnected");
         }
 
         @Override
-        public void onError(CameraDevice camera, int error) {
+        public void onError(@NonNull CameraDevice camera, int error) {
             Log.e(TAG, "onError");
         }
 
     };
-
-
 
 
 }
