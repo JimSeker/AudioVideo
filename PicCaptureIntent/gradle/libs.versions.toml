@@ -1,6 +1,6 @@
 [versions]
 activity = "1.13.0"
-androidGradlePlugin = "9.4.0"
+androidGradlePlugin = "9.4.1"
 androidxAppcompat = "1.8.0"
 androidxConstraintlayout = "2.2.2"
 androidxExifinterface = "1.4.2"
