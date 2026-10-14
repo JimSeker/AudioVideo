@@ -18,6 +18,12 @@ These examples are no longer updated and should be concerned abandoned.
 
 `PicCapture3` shows examples of how to take a picture with the intent.  older code and kind of a mess too.
 
+
+`QRdemo` shows to to create and scan QR codes.  This uses zxing app and some of there code (included in project).  Note zxing states their code is in maintenance mode only and not actively being developed.  the code still work in api 33, but it will likely fail sometime soon, this can be done via the googleapi in mlkit/vision as well.
+A link to where I got the code is https://github.com/zxing/zxing/tree/master/android-integration/src/main/java/com/google/zxing/integration/android 
+does not work on android 15 as the app it needs won't install and listed as not compatible.
+
+
 `VideoCapture3` shows how to record video with either Camera or Camera2 (API21+).  Note that using Camera in 21+ causes odd results like the video maybe upside down.
 
 `YouTubeDemo` Shows how to use the youtube API and key.  The youtube libraries are badly out of date and this example doesn't work well since API 29.  https://developers.google.com/youtube/android/player/ 

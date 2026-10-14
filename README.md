@@ -52,16 +52,6 @@ Android Audio and video Examples
 
 `VideoPlayA` shows and to play a video with a video view.
 
-
----
-
-**Other A/V Examples:**
-
-
-`QRdemo` shows to to create and scan QR codes.  This uses zxing app and some of there code (included in project).  Note zxing states their code is in maintenance mode only and not actively being developed.  the code still work in api 33, but it will likely fail sometime soon, this can be done via the googleapi in mlkit/vision as well.
-A link to where I got the code is https://github.com/zxing/zxing/tree/master/android-integration/src/main/java/com/google/zxing/integration/android 
-does not work on android 15 as the app it needs won't install and listed as not compatible.
-
 ---
 
 These are example code for University of Wyoming, Cosc 4730 Mobile Programming course and cosc 4735 Advance Mobile Programing course. 
