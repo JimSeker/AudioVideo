@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
             }
         );
 
-        //lensFacing = CameraSelector.DEFAULT_BACK_CAMERA;
+        lensFacing = CameraSelector.DEFAULT_BACK_CAMERA;
         executor = ContextCompat.getMainExecutor(this);
         //create the faceDetector
         //most accurate one
@@ -118,13 +118,22 @@ public class MainActivity extends AppCompatActivity {
                     public void accept(MlKitAnalyzer.Result result) {
                         List<Face> faces = result.getValue(faceDetector);
                         if (faces != null) {
-                            binding.graphicOverlay.setFaces(faces);
+                            binding.graphicOverlay.setFaces(faces, lensFacing);
                         }
                         binding.graphicOverlay.postInvalidate();
                     }
                 }
             )
         );
+
+        binding.fab.setOnClickListener(v -> {
+            if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA) {
+                lensFacing = CameraSelector.DEFAULT_BACK_CAMERA;
+            } else {
+                lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA;
+            }
+            cameraController.setCameraSelector(lensFacing);
+        });
 
         cameraController.setCameraSelector(lensFacing);
         cameraController.bindToLifecycle(this);
