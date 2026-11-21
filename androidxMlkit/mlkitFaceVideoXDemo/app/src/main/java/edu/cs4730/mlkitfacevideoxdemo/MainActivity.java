@@ -42,21 +42,21 @@ import edu.cs4730.mlkitfacevideoxdemo.databinding.ActivityMainBinding;
 public class MainActivity extends AppCompatActivity {
 
 
-    String TAG = "MainActivity";
-    ActivityResultLauncher<String[]> rpl;
-    private final String[] REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
-    Executor executor;
-    CameraSelector lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA;
+        String TAG = "MainActivity";
+        ActivityResultLauncher<String[]> rpl;
+        private final String[] REQUIRED_PERMISSIONS = new String[]{Manifest.permission.CAMERA};
+        Executor executor;
+        CameraSelector lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA;
 
-    FaceDetector faceDetector;
-    ActivityMainBinding binding;
+        FaceDetector faceDetector;
+        ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(binding.main.getId()), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return WindowInsetsCompat.CONSUMED;
