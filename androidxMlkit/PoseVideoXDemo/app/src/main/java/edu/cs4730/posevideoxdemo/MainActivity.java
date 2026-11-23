@@ -19,7 +19,6 @@ import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.util.Consumer;
 import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.mlkit.vision.pose.Pose;
@@ -34,6 +33,16 @@ import java.util.Map;
 import java.util.concurrent.Executor;
 
 import edu.cs4730.posevideoxdemo.databinding.ActivityMainBinding;
+
+
+/**
+ * This is the pose detection without needed the extra pieces.  except it does completely work.
+ * Not sure if there is an error mlkit for pose, it works perfect for barcode and face.  but
+ * pose seems to be off, by a scale of 2.x for x and y direction.
+ *
+ * I used the graphic overlay from the Google api version with the same result.  assuming pose isn't
+ * supported correctly yet.  not sure.
+ */
 
 public class MainActivity extends AppCompatActivity {
 
@@ -50,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main, (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -74,11 +83,6 @@ public class MainActivity extends AppCompatActivity {
                 .setDetectorMode(PoseDetectorOptions.STREAM_MODE)
                 .setPreferredHardwareConfigs(PoseDetectorOptions.CPU_GPU)
                 .build();
-        // Accurate pose detector on static images, when depending on the pose-detection-accurate sdk
-//        AccuratePoseDetectorOptions options =
-//            new AccuratePoseDetectorOptions.Builder()
-//                .setDetectorMode(AccuratePoseDetectorOptions.SINGLE_IMAGE_MODE)
-//                .build();
 
         poseDetector = PoseDetection.getClient(options);
         lensFacing = CameraSelector.DEFAULT_BACK_CAMERA;
@@ -99,31 +103,32 @@ public class MainActivity extends AppCompatActivity {
             executor,
             new MlKitAnalyzer(
                 Collections.singletonList(poseDetector),
-                ImageAnalysis.COORDINATE_SYSTEM_VIEW_REFERENCED,
+                ImageAnalysis.COORDINATE_SYSTEM_ORIGINAL,
                 executor,
                 new Consumer<MlKitAnalyzer.Result>() {
                     @Override
                     public void accept(MlKitAnalyzer.Result result) {
-                        binding.graphicOverlay.setImageSourceInfo(
-                            binding.viewFinder.getWidth(),
-                            binding.viewFinder.getHeight(),
-                            lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA
-                        );
 
                         Pose pose = result.getValue(poseDetector);
                         List<PoseLandmark> allPoseLandmarks = pose.getAllPoseLandmarks();
                         if (!allPoseLandmarks.isEmpty()) {
-                            logthis("We have landmarks\n");
+                            //logthis("We have landmarks\n");
+                            binding.graphicOverlay.setPose(pose,lensFacing,true);
                         }
-                        binding.graphicOverlay.clear();
-                        binding.graphicOverlay.add(new PoseGraphic(binding.graphicOverlay, pose, true));
                         binding.graphicOverlay.postInvalidate();
 
                     }
                 }
             )
         );
-
+        binding.fab.setOnClickListener(v -> {
+            if (lensFacing == CameraSelector.DEFAULT_FRONT_CAMERA) {
+                lensFacing = CameraSelector.DEFAULT_BACK_CAMERA;
+            } else {
+                lensFacing = CameraSelector.DEFAULT_FRONT_CAMERA;
+            }
+            cameraController.setCameraSelector(lensFacing);
+        });
         cameraController.setCameraSelector(lensFacing);
         cameraController.bindToLifecycle(this);
         binding.viewFinder.setController(cameraController);

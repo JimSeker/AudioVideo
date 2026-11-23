@@ -102,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             rpl.launch(REQUIRED_PERMISSIONS);
         }
+
     }
 
 

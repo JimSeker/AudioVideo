@@ -15,7 +15,6 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -50,7 +49,5 @@ dependencies {
     implementation(libs.camera.mlkit.vision)
     implementation(libs.concurrent.futures)
     implementation(libs.mlkit.pose.detection)
-    // If you want to use the accurate sdk
-    implementation(libs.mlkit.pose.detection.accurate)
 
 }
