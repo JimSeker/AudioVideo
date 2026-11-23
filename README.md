@@ -37,6 +37,7 @@ Android Audio and video Examples
 
 **Video Examples:**
 
+`CameraXMLkit/` is some MLkit examples redone using the cameraX and cameraX MlKitAnalyzer.  makes for much simplier code then in [googleAPI/mlkit repo](https://github.com/JimSeker/googleplayAPI/tree/master/mlkit)
 
 `CameraXVideoDemo` is using java with the new CameraX for video recording.   The video version of the cameraX APIs are beta, So they may change without notice or simply stop working.
 
@@ -45,8 +46,6 @@ Android Audio and video Examples
 `VideoCapture1` shows how to record video with Camera2 (API21+).  there is no playback of the video.
 
 `videoCapture2` Uses the camera2 to record videos and storages in public movie directory on the sdcard.  It has bottomNavView so you can switch to a player and see the videos you have recorded this session.
-
-
 
 `VideoCaptureIntent` shows how to ask the video recorder (likely camera) to record for you and store in default directory, inside your app, or onto the sdcard using the mediastore.  So no permissions are necessary.
 
