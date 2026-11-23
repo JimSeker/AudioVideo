@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
             executor,
             new MlKitAnalyzer(
                 Collections.singletonList(poseDetector),
-                ImageAnalysis.COORDINATE_SYSTEM_ORIGINAL,
+                ImageAnalysis.COORDINATE_SYSTEM_VIEW_REFERENCED,
                 executor,
                 new Consumer<MlKitAnalyzer.Result>() {
                     @Override
